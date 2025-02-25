@@ -2,6 +2,7 @@ package main
 
 import (
 	"auth-service/config"
+	"auth-service/routers"
 	"log"
 	"os"
 
@@ -11,6 +12,7 @@ import (
 )
 
 func main() {
+	config.Init()
 	app := fiber.New(fiber.Config{
 		Prefork:     true,
 	})
@@ -26,8 +28,7 @@ func main() {
 		AllowHeaders: "*",
 		AllowMethods:"GET,POST,OPTIONS,PUT,DELETE,PATCH",
 	}))
-
-	config.Init()
+	routers.HandleRouter(app)
 
 	port := os.Getenv("PORT")
 	if port == "" {
