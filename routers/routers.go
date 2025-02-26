@@ -7,10 +7,10 @@ import (
 
 func HandleRouter(app *fiber.App) {
 	log.Info("Initialize routers")
-
-	app.Post("/login")
-	app.Get("/logout")
-	app.Get("/me")
-	app.Post("/acl")
+	api := app.Group("/v1")
+	api.Post("/login")
+	api.Get("/logout")
+	api.Get("/me")
+	api.Post("/acl")
 
 }
