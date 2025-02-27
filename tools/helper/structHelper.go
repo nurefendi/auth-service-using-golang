@@ -1,4 +1,4 @@
-package structhelper
+package helper
 
 import (
 	"encoding/json"
