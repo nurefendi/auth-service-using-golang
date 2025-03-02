@@ -19,13 +19,15 @@ func AuthRegister(c *fiber.Ctx) {
 	var request dto.AuthUserRegisterRequest
 	if err := c.BodyParser(&request); err != nil {
 		log.Error("invalid bind json payload ")
-		c.Status(fiber.StatusBadRequest)
+		c.Status(fiber.StatusBadRequest).
+		JSON(err)
 		return
 	}
 
 	if err := helper.ValidateStruct(&request); err != nil {
 		log.Error(" Error validation ", err.Error())
-		c.Status(fiber.StatusUnprocessableEntity)
+		c.Status(fiber.StatusUnprocessableEntity).
+		JSON(err)
 		return
 	}
 
