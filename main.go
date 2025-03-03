@@ -2,6 +2,7 @@ package main
 
 import (
 	"auth-service/config"
+	"auth-service/config/database"
 	"auth-service/routers"
 	"log"
 	"os"
@@ -16,6 +17,13 @@ func main() {
 	app := fiber.New(fiber.Config{
 		Prefork:     true,
 	})
+
+	if !app.Config().Prefork {
+		database.InitGlobalDB()
+	}
+
+	// Middleware DB (Hanya berguna untuk Prefork)
+	app.Use(database.DBMiddleware())
 
 	app.Use(healthcheck.New(healthcheck.Config{
 		LivenessProbe: func(c *fiber.Ctx) bool {
@@ -37,4 +45,5 @@ func main() {
 
 	log.Print("Routed to port " + port, " ", fiber.IsChild())
 	log.Fatal(app.Listen(":" + port))
+	defer database.CloseDBConnection()
 }

@@ -3,31 +3,36 @@ package database
 import (
 	"fmt"
 	"os"
-
 	"strconv"
+	"time"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
-
-	"time"
 )
 
+// Global connection jika Prefork dimatikan
 var DBConn *gorm.DB
 
-func CreateDBConnection() {
-	log.Info("Initiate database connection")
+// Function untuk membuat koneksi database baru
+func CreateDBConnection() *gorm.DB {
+	log.Info("Initiating database connection...")
+
+	// Load environment variables
 	user := os.Getenv("DB_USERNAME")
 	password := os.Getenv("DB_PASSWORD")
 	database := os.Getenv("DB_DATABASE")
 	host := os.Getenv("DB_HOST")
 
-	dns := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local", user, password, host, database)
+	// Create DSN
+	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		user, password, host, database)
 
+	// Open connection
 	conn, err := gorm.Open(mysql.New(mysql.Config{
-		DSN: dns,
-		// PreferSimpleProtocol: true, // disables implicit prepared statement usage
+		DSN: dsn,
 	}), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
 			SingularTable: true,
@@ -35,50 +40,74 @@ func CreateDBConnection() {
 	})
 
 	if err != nil {
-		log.Errorf("Error/Timeout occurred while connecting with the host %s", host)
-		panic(err)
+		log.Fatalf("Error connecting to database: %v", err)
 	}
 
+	// Get sql.DB object
 	sqlDB, err := conn.DB()
 	if err != nil {
-		log.Errorf("Cannot connect to DB (%s)", database)
-		CloseDBConnection()
-		return
+		log.Fatalf("Cannot get sql.DB: %v", err)
 	}
 
-	idleConnection := parseStringToInt(os.Getenv("DB_MAX_IDLE_CONNECTION"))
-	maxOpenConnection := parseStringToInt(os.Getenv("DB_MAX_OPEN_CONNECTION"))
-
-	sqlDB.SetConnMaxIdleTime(time.Minute * 5)
-
-	// SetMaxIdleConns sets the maximum number of connections in the idle connection pool.
-	sqlDB.SetMaxIdleConns(idleConnection)
-
-	// SetMaxOpenConns sets the maximum number of open connections to the database.
-	sqlDB.SetMaxOpenConns(maxOpenConnection)
-
-	// SetConnMaxLifetime sets the maximum amount of time a connection may be reused.
+	// Set database connection pool settings
+	sqlDB.SetConnMaxIdleTime(5 * time.Minute)
+	sqlDB.SetMaxIdleConns(parseStringToInt(os.Getenv("DB_MAX_IDLE_CONNECTION")))
+	sqlDB.SetMaxOpenConns(parseStringToInt(os.Getenv("DB_MAX_OPEN_CONNECTION")))
 	sqlDB.SetConnMaxLifetime(time.Hour)
 
-	DBConn = conn
-	log.Infof("Success connect to DB %s", DBConn.Name())
+	log.Info("Database connection established")
+	return conn
 }
 
+// Function untuk mendapatkan koneksi database dari Fiber Context
+func GetDBConnection(c *fiber.Ctx) *gorm.DB {
+	db, ok := c.Locals("db").(*gorm.DB)
+	if ok {
+		return db // Koneksi dari Prefork
+	}
+	return DBConn // Koneksi Global
+}
+
+// Middleware untuk setup DB di setiap request (hanya jika pakai Prefork)
+func DBMiddleware() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		if c.App().Config().Prefork {
+			db := CreateDBConnection()
+			defer func() {
+				sqlDB, _ := db.DB()
+				sqlDB.Close()
+			}()
+			c.Locals("db", db)
+		}
+		return c.Next()
+	}
+}
+
+// Fungsi untuk inisialisasi koneksi global saat tidak menggunakan Prefork
+func InitGlobalDB() {
+	if DBConn == nil {
+		DBConn = CreateDBConnection()
+	}
+}
+
+// Function untuk menutup koneksi DB saat aplikasi berhenti
 func CloseDBConnection() {
-	log.Info("Close DB connection")
 	if DBConn != nil {
 		sqlDB, err := DBConn.DB()
 		if err != nil {
-			log.Error("Error occurred while closing a DB connection")
+			log.Errorf("Error while closing DB connection: %v", err)
+			return
 		}
-		defer sqlDB.Close()
+		sqlDB.Close()
+		log.Info("Global database connection closed")
 	}
 }
 
+// Function untuk mengkonversi string ke int
 func parseStringToInt(value string) int {
 	i, err := strconv.Atoi(value)
 	if err != nil {
-		log.Error(err)
+		log.Errorf("Error parsing int: %v", err)
 		return 0
 	}
 	return i

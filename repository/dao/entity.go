@@ -1,8 +1,10 @@
 package dao
 
 import (
-	"github.com/google/uuid"
+	enums "auth-service/common/enums/httpmethod"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type AuditorDAO struct {
@@ -73,6 +75,8 @@ type AuthPortalLang struct {
 // AuthFunction represents the auth_function table
 type AuthFunction struct {
 	PortalID    uuid.UUID          `gorm:"type:uuid;not null"`
+	ParentID    *uuid.UUID         `gorm:"type:uuid"`
+	Method      enums.HttpMethod   `gorm:"type:enum('GET', 'POST', 'PUT', 'DELETE', 'PATCH');not null;default:'GET'"`
 	Position    string             `gorm:"type:varchar(20);not null"`
 	Icon        *string            `gorm:"type:varchar(255)"`
 	FontIcon    *string            `gorm:"type:varchar(50)"`

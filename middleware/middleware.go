@@ -4,7 +4,9 @@ import (
 	"auth-service/common/constants"
 	"auth-service/dto"
 	"auth-service/middleware/jwt"
+	authPermissionRepository "auth-service/repository/database/authpermission"
 	"auth-service/tools/locals"
+	"errors"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -14,11 +16,11 @@ import (
 func SetMiddlewareAUTH() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		authHeader := c.Get(fiber.HeaderAuthorization)
-		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
+		if authHeader == "" || !strings.HasPrefix(authHeader, constants.BEARER) {
 			return c.Status(fiber.StatusUnauthorized).
 			SendString("Missing or invalid token")
 		}
-		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+		tokenString := strings.TrimPrefix(authHeader, constants.BEARER)
 
 		dataClaim, err := jwt.JwtClaims(c, tokenString)
 		if err != nil {
@@ -37,6 +39,12 @@ func SetMiddlewareAUTH() fiber.Handler {
 			ChannelID: getChannelId(c),
 			UserAccess: userAccess,
 		})
+
+		err = getAuthorizationFunction(c)
+		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).
+			SendString("unauthorized access")
+		}
 
 		return c.Next()
 	}
@@ -70,9 +78,12 @@ func getLanguageCode(c *fiber.Ctx) string {
 }
 
 func getAuthorizationFunction(c *fiber.Ctx) error {
-	c.Path()
-	// usecase for get 
-	// AuthFunction inner join AuthPermission where  AuthFunction.path and AuthPermission.groupId
-
-	panic("unimplement")
+	can, err := authPermissionRepository.FindByGroupIdAndPathAndMethod(c)
+	if err != nil {
+		return err
+	}
+	if !can {
+		return errors.New("unauthorized access")
+	}
+	return nil
 }

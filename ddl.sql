@@ -75,6 +75,8 @@ CREATE TABLE IF NOT EXISTS auth_portal_lang (
 CREATE TABLE IF NOT EXISTS auth_function (
     id UUID PRIMARY KEY NOT null,
     portal_id UUID NOT null,
+    parent_id UUID null,
+    method ENUM("GET", "POST", "PUT", "DELETE", "PATCH") NOT NULL DEFAULT "GET",
     `position` VARCHAR(20) NOT null,
     icon VARCHAR(255) null,
     font_icon VARCHAR(50) null,
