@@ -6,7 +6,8 @@ type (
 	authUseCase struct{}
 
 	Auth interface {
-		Register(c *fiber.Ctx) *fiber.Ctx
-		Login(c *fiber.Ctx) *fiber.Ctx
+		Register(c *fiber.Ctx) *fiber.Error
+		CheckEmailExist(c *fiber.Ctx, email *string) *fiber.Error
+		Login(c *fiber.Ctx) *fiber.Error
 	}
 )

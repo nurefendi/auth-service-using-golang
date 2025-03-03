@@ -3,6 +3,7 @@ package authpermission
 import (
 	enums "auth-service/common/enums/httpmethod"
 	"auth-service/config/database"
+	"auth-service/dto"
 	"auth-service/repository/dao"
 	"auth-service/tools/locals"
 	"errors"
@@ -14,7 +15,7 @@ import (
 
 func Save(c *fiber.Ctx, data *dao.AuthPermission) error {
 	db := database.GetDBConnection(c)
-	currentAcess := locals.GetLocals(c)
+	currentAcess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
 	if db == nil {
 		log.Error(currentAcess.RequestID, " error cannot find db connection")
 		return errors.New("database connection is nil")
@@ -30,7 +31,7 @@ func Save(c *fiber.Ctx, data *dao.AuthPermission) error {
 
 func FindById(c *fiber.Ctx, id uuid.UUID) (*dao.AuthPermission, error) {
 	db := database.GetDBConnection(c)
-	currentAcess := locals.GetLocals(c)
+	currentAcess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
 	data := dao.AuthPermission{}
 	findRecord := db.Where("id = ?", id).
 		Preload("Function").
@@ -45,7 +46,7 @@ func FindById(c *fiber.Ctx, id uuid.UUID) (*dao.AuthPermission, error) {
 
 func FindByGroupIdAndPathAndMethod(c *fiber.Ctx) (bool, error) {
 	db := database.GetDBConnection(c)
-	currentAccess := locals.GetLocals(c)
+	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
 
 	if db == nil {
 		log.Error(currentAccess.RequestID, " database connection is nil")

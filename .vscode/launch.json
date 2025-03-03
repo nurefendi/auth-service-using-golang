@@ -11,7 +11,7 @@
             "mode": "debug",
             "program": "${workspaceRoot}",
             "env": {
-                "PORT": "8086",
+                "PORT": "9000",
                 "APP_ENV": "local"
             }
         }

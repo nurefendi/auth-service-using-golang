@@ -2,6 +2,7 @@ package authfunction
 
 import (
 	"auth-service/config/database"
+	"auth-service/dto"
 	"auth-service/repository/dao"
 	"auth-service/tools/locals"
 
@@ -12,7 +13,7 @@ import (
 
 func Save(c *fiber.Ctx, data *dao.AuthFunction) error {
 	db := database.GetDBConnection(c)
-	currentAcess := locals.GetLocals(c)
+	currentAcess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
 	if db == nil {
 		log.Error(currentAcess.RequestID, " error cannot find db connection")
 		return c.Status(fiber.StatusInternalServerError).
@@ -29,7 +30,7 @@ func Save(c *fiber.Ctx, data *dao.AuthFunction) error {
 
 func FindById(c *fiber.Ctx, id uuid.UUID) (*dao.AuthFunction, error) {
 	db := database.GetDBConnection(c)
-	currentAcess := locals.GetLocals(c)
+	currentAcess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
 	data := dao.AuthFunction{}
 	findRecord := db.Where("id = ?", id).
 		Preload("Lang").

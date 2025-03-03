@@ -8,16 +8,21 @@ import (
 
 type localKey string
 
-const UserLocalKey localKey = "userAccess"
+const (
+	UserLocalKey    localKey = "userAccess"
+	PayloadLocalKey localKey = "payload"
+	Entity          localKey = "entity"
+)
 
 func SetLocals(c *fiber.Ctx, local dto.UserLocals) {
 	c.Locals(UserLocalKey, local)
 }
 
-func GetLocals(c *fiber.Ctx) *dto.UserLocals {
-	value := c.Locals(UserLocalKey)
-	if userLocals, ok := value.(dto.UserLocals); ok {
-		return &userLocals
+
+func GetLocals[T any](c *fiber.Ctx, key localKey) *T {
+	value := c.Locals(key)
+	if locals, ok := value.(T); ok {
+		return &locals
 	}
 	return nil
 }

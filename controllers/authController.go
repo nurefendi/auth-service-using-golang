@@ -3,36 +3,36 @@ package controllers
 import (
 	"auth-service/dto"
 	"auth-service/tools/helper"
+	"auth-service/tools/locals"
+	"auth-service/usecase"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 )
 
-// TODO :
-// - login
-// - register
-// - me
-// - check access acl function
 
-func AuthRegister(c *fiber.Ctx) {
-
+func AuthRegister(c *fiber.Ctx) error {
+	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
 	var request dto.AuthUserRegisterRequest
 	if err := c.BodyParser(&request); err != nil {
-		log.Error("invalid bind json payload ")
+		log.Error(currentAccess.RequestID, " invalid bind json payload ")
 		c.Status(fiber.StatusBadRequest).
-		JSON(err)
-		return
+		JSON(fiber.NewError(fiber.StatusBadRequest, " invalid bind json payload"))
+		return nil
 	}
 
 	if err := helper.ValidateStruct(&request); err != nil {
-		log.Error(" Error validation ", err.Error())
+		log.Error(currentAccess.RequestID, " Error validation ", err.Error())
 		c.Status(fiber.StatusUnprocessableEntity).
-		JSON(err)
-		return
+		JSON(fiber.NewError(fiber.StatusUnprocessableEntity, err.Error()))
+		return nil
 	}
-
-	// add usecase here
-
-	c.Status(fiber.StatusOK)
+	c.Locals(locals.PayloadLocalKey, request)
+	fibererr := usecase.AuthUSeCase().Register(c)
+	if fibererr != nil {
+		c.Status(fibererr.Code).SendString(fibererr.Message)
+		return nil
+	}
+	return c.SendStatus(fiber.StatusCreated)
 }
 

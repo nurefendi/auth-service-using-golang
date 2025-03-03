@@ -13,6 +13,18 @@ import (
 	"github.com/google/uuid"
 )
 
+func SetMiddlewareJSON() fiber.Handler {
+	return func(c *fiber.Ctx) error  {
+		c.Request().Header.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
+		locals.SetLocals(c, dto.UserLocals{
+			RequestID: getRequestId(c),
+			LanguageCode: getLanguageCode(c),
+			ChannelID: getChannelId(c),
+		})
+		return c.Next()
+	}
+}
+
 func SetMiddlewareAUTH() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		authHeader := c.Get(fiber.HeaderAuthorization)
