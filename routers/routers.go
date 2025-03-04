@@ -17,4 +17,6 @@ func HandleRouter(app *fiber.App) {
 	// api.Get("/me")
 	// api.Post("/acl")
 
+	api.Post("/portal", middleware.SetMiddlewareAUTH(), )
+
 }
