@@ -57,3 +57,28 @@ func FindByEmail(c *fiber.Ctx, email *string) (*dao.AuthUser, *fiber.Error) {
 
 	return &data, nil
 }
+
+func FindByUserName(c *fiber.Ctx, username *string) (*dao.AuthUser, *fiber.Error) {
+	db := database.GetDBConnection(c)
+	currentAcess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
+	if db == nil {
+		log.Error(currentAcess.RequestID, " error cannot find db connection")
+		return nil, &fiber.Error{
+			Code: fiber.StatusInternalServerError,
+			Message: "Unable to conect database",
+		}
+	}
+	var data dao.AuthUser
+	err := db.Model(&dao.AuthUser{}).
+		Where("username = ?", username).
+		Find(&data).Error
+	if err != nil {
+		log.Error(currentAcess.RequestID, err.Error())
+		return nil, &fiber.Error{
+			Code: fiber.StatusUnprocessableEntity,
+			Message: err.Error(),
+		}
+	}
+
+	return &data, nil
+}

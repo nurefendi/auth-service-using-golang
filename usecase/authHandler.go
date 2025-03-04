@@ -84,3 +84,24 @@ func (a *authUseCase) CheckEmailExist(c *fiber.Ctx, email *string) *fiber.Error 
 	}
 	return nil
 }
+
+func (a *authUseCase) CheckUserNameExist(c *fiber.Ctx, userNames *string) *fiber.Error {
+	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
+	data, err := authUserRepository.FindByUserName(c, userNames)
+	if err != nil {
+		log.Error(currentAccess.RequestID, err)
+		return &fiber.Error{
+			Code: fiber.StatusInternalServerError,
+			Message: err.Error(),
+		}
+		
+	}
+	if data.ID != uuid.Nil {
+		log.Error(currentAccess.RequestID, " email exist ")
+		return &fiber.Error{
+			Code: fiber.StatusUnprocessableEntity,
+			Message: "email exist",
+		}
+	}
+	return nil
+}

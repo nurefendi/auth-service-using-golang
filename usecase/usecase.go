@@ -8,6 +8,7 @@ type (
 	Auth interface {
 		Register(c *fiber.Ctx) *fiber.Error
 		CheckEmailExist(c *fiber.Ctx, email *string) *fiber.Error
+		CheckUserNameExist(c *fiber.Ctx, userName *string) *fiber.Error
 		Login(c *fiber.Ctx) *fiber.Error
 	}
 )
