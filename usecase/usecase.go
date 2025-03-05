@@ -20,6 +20,6 @@ type (
 	Portal interface {
 		Save(c *fiber.Ctx, data *dto.PortalSaveRequest) *fiber.Error
 		Update(c *fiber.Ctx, data *dto.PortalSaveRequest) *fiber.Error
-		Delete(c *fiber.Ctx, id *uuid.UUID) *fiber.Error
+		Delete(c *fiber.Ctx, id uuid.UUID) *fiber.Error
 	}
 )

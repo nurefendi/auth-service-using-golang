@@ -1,6 +1,7 @@
 package dto
 
 type PortalSaveRequest struct {
+	Order     int                     `json:"order" validate:"required"`
 	Path      string                  `json:"path" validate:"required"`
 	Icon      *string                 `json:"icon" validate:"omitempty"`
 	FontIcon  *string                 `json:"fontIcon" validate:"omitempty"`

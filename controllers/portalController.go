@@ -28,8 +28,7 @@ func SavePortal(c *fiber.Ctx) error {
 		JSON(fiber.NewError(fiber.StatusUnprocessableEntity, err.Error()))
 		return err
 	}
-	c.Locals(locals.PayloadLocalKey, request)
-	fibererr := usecase.AuthUSeCase().Register(c)
+	fibererr := usecase.PortalUseCase().Save(c, &request)
 	if fibererr != nil {
 		c.Status(fibererr.Code).SendString(fibererr.Message)
 		return errors.New(fibererr.Error())

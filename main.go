@@ -10,6 +10,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/healthcheck"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
 func main() {
@@ -24,6 +25,7 @@ func main() {
 
 	// Middleware DB (Hanya berguna untuk Prefork)
 	app.Use(database.DBMiddleware())
+	app.Use(logger.New())
 
 	app.Use(healthcheck.New(healthcheck.Config{
 		LivenessProbe: func(c *fiber.Ctx) bool {
