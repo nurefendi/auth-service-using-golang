@@ -18,8 +18,9 @@ type (
 		Login(c *fiber.Ctx) *fiber.Error
 	}
 	Portal interface {
-		Save(c *fiber.Ctx, data *dto.PortalSaveRequest) *fiber.Error
-		Update(c *fiber.Ctx, data *dto.PortalSaveRequest) *fiber.Error
+		Save(c *fiber.Ctx, data *dto.PortalDto) *fiber.Error
+		Update(c *fiber.Ctx, data *dto.PortalDto) *fiber.Error
 		Delete(c *fiber.Ctx, id uuid.UUID) *fiber.Error
+		FindById(c *fiber.Ctx, id uuid.UUID) (*dto.PortalDto, *fiber.Error)
 	}
 )

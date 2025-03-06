@@ -25,9 +25,9 @@ func HandleRouter(app *fiber.App) {
 	api.Get("/portal", middleware.SetMiddlewareAUTH())
 
 	api.Post("/portal", middleware.SetMiddlewareAUTH(), controllers.SavePortal)
-	api.Get("/portal/:id", middleware.SetMiddlewareAUTH(), controllers.SavePortal)
-	api.Put("/portal", middleware.SetMiddlewareAUTH(), controllers.SavePortal)
-	api.Delete("/portal/:id", middleware.SetMiddlewareAUTH(), controllers.SavePortal)
+	api.Get("/portal/:id", middleware.SetMiddlewareAUTH(), controllers.GetPortalById)
+	api.Put("/portal", middleware.SetMiddlewareAUTH(), controllers.UpdatePortal)
+	api.Delete("/portal/:id", middleware.SetMiddlewareAUTH(), controllers.DeletePortalById)
 	
 	api.Get("/acl/function", middleware.SetMiddlewareAUTH())
 	api.Get("/acl/function/:id", middleware.SetMiddlewareAUTH())

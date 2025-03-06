@@ -4,9 +4,12 @@ import (
 	"auth-service/dto"
 	"auth-service/repository/dao"
 	portalRepository "auth-service/repository/database/authportal"
+	portalLangRepository "auth-service/repository/database/authportallang"
+	"auth-service/tools/helper"
 	"auth-service/tools/locals"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/log"
 	"github.com/google/uuid"
 )
 
@@ -16,17 +19,23 @@ func PortalUseCase() Portal {
 
 // Delete implements Portal.
 func (p *portalUseCase) Delete(c *fiber.Ctx, id uuid.UUID) *fiber.Error {
+	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
+	_, errf := portalRepository.FindById(c, id)
+	if errf != nil {
+		log.Error(currentAccess.RequestID, errf.Message)
+		return errf
+	}
 	return portalRepository.Delete(c, id)
 }
 
 // Save implements Portal.
-func (p *portalUseCase) Save(c *fiber.Ctx, data *dto.PortalSaveRequest) *fiber.Error {
+func (p *portalUseCase) Save(c *fiber.Ctx, data *dto.PortalDto) *fiber.Error {
 	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
 	var languages []dao.AuthPortalLang
 	for _, lang := range data.Languages {
 		languages = append(languages, dao.AuthPortalLang{
-			Name: lang.PortalName,
-			Lang: lang.LanguageCode,
+			Name:        lang.PortalName,
+			Lang:        lang.LanguageCode,
 			Description: &lang.Description,
 			AuditorDAO: dao.AuditorDAO{
 				CreatedBy: currentAccess.UserAccess.Email,
@@ -34,9 +43,9 @@ func (p *portalUseCase) Save(c *fiber.Ctx, data *dto.PortalSaveRequest) *fiber.E
 		})
 	}
 	saveError := portalRepository.Save(c, &dao.AuthPortal{
-		Order: data.Order,
-		Path: data.Path,
-		Icon: data.Icon,
+		Order:    data.Order,
+		Path:     data.Path,
+		Icon:     data.Icon,
 		FontIcon: data.FontIcon,
 		AuditorDAO: dao.AuditorDAO{
 			CreatedBy: currentAccess.UserAccess.Email,
@@ -50,6 +59,80 @@ func (p *portalUseCase) Save(c *fiber.Ctx, data *dto.PortalSaveRequest) *fiber.E
 }
 
 // Update implements Portal.
-func (p *portalUseCase) Update(c *fiber.Ctx, data *dto.PortalSaveRequest) *fiber.Error {
-	panic("unimplemented")
+func (p *portalUseCase) Update(c *fiber.Ctx, data *dto.PortalDto) *fiber.Error {
+	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
+	if data.ID == nil {
+		log.Error(currentAccess.RequestID, " ID must not nil")
+		return fiber.NewError(fiber.StatusBadRequest, "Portal id required")
+	}
+	datadb, errf := portalRepository.FindById(c, *data.ID)
+	if errf != nil {
+		log.Error(currentAccess.RequestID, errf.Message)
+		return errf
+	}
+	existingLangMap := make(map[string]dao.AuthPortalLang)
+	for _, lang := range datadb.Lang {
+		existingLangMap[lang.Lang] = lang
+	}
+	var languages []dao.AuthPortalLang
+	for _, lang := range data.Languages {
+		if existingLang, found := existingLangMap[lang.LanguageCode]; found {
+			existingLang.Name = lang.PortalName
+			existingLang.Description = &lang.Description
+			existingLang.AuditorDAO.ModifiedBy = &currentAccess.UserAccess.Email
+			languages = append(languages, existingLang)
+			delete(existingLangMap, lang.LanguageCode)
+		} else {
+			languages = append(languages, dao.AuthPortalLang{
+				Name:        lang.PortalName,
+				Lang:        lang.LanguageCode,
+				Description: &lang.Description,
+				AuditorDAO: dao.AuditorDAO{
+					CreatedBy: currentAccess.UserAccess.Email,
+				},
+			})
+		}
+	}
+
+	for _, langToDelete := range existingLangMap {
+		err := portalLangRepository.Delete(c, langToDelete.ID)
+		if err != nil {
+			log.Error(currentAccess.RequestID, "Failed to delete lang:", langToDelete.ID, "Error:", err.Message)
+			return err
+		}
+	}
+	saveError := portalRepository.Save(c, &dao.AuthPortal{
+		Order:    data.Order,
+		Path:     data.Path,
+		Icon:     data.Icon,
+		FontIcon: data.FontIcon,
+		AuditorDAO: dao.AuditorDAO{
+			ModifiedBy: &currentAccess.UserAccess.Email,
+			ID:         *data.ID,
+		},
+		Lang: languages,
+	})
+	if saveError != nil {
+		log.Error(currentAccess.RequestID, "Failed to save portal:", saveError.Message)
+		return saveError
+	}
+
+	return &fiber.Error{}
+}
+
+// FindById implements Portal.
+func (p *portalUseCase) FindById(c *fiber.Ctx, id uuid.UUID) (*dto.PortalDto, *fiber.Error) {
+	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
+	data, errf := portalRepository.FindById(c, id)
+	if errf != nil {
+		log.Error(currentAccess.RequestID, errf.Message)
+		return nil, errf
+	}
+	var result dto.PortalDto
+	err := helper.Map(data, &result)
+	if err != nil {
+		log.Error(currentAccess.RequestID, err.Error())
+		return nil, fiber.NewError(fiber.StatusUnprocessableEntity, "Erorr bind data")
+	}
+	return &result, &fiber.Error{}
 }
