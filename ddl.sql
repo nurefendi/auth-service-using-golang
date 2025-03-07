@@ -118,3 +118,14 @@ CREATE TABLE IF NOT EXISTS auth_permission (
     FOREIGN KEY (group_id) REFERENCES auth_group(id) ON DELETE CASCADE,
     FOREIGN KEY (function_id) REFERENCES auth_function(id) ON DELETE CASCADE
 );
+CREATE TABLE IF NOT EXISTS auth_refresh_tokens (
+    id UUID PRIMARY KEY DEFAULT (uuid()),
+    user_id UUID NOT NULL,
+    token TEXT NOT NULL UNIQUE,
+    expires_at TIMESTAMP NOT NULL,
+    created_at DATETIME not NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(255) NOT NULL,
+    modified_at DATETIME NULL,
+    modified_by VARCHAR(255) NULL,
+    FOREIGN KEY (user_id) REFERENCES auth_user(id) ON DELETE CASCADE
+);

@@ -107,3 +107,10 @@ type AuthPermission struct {
 	Function    AuthFunction `gorm:"foreignKey:FunctionID;references:ID;constraint:OnDelete:CASCADE"`
 	AuditorDAO
 }
+
+type AuthRefreshTokens struct {
+	UserID    uuid.UUID `gorm:"type:uuid;not null;index"`
+	Token     string    `gorm:"type:text;not null;unique"`
+	ExpiresAt time.Time `gorm:"type:timestamp;not null"`
+	AuditorDAO
+}
