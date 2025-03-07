@@ -19,10 +19,10 @@ func HandleRouter(app *fiber.App) {
 	api.Post("/auth/login", middleware.SetMiddlewareJSON())
 	
 	// need whitelist this path in midleware
-	api.Get("/auth/logout", middleware.SetMiddlewareAUTH())
-	api.Get("/auth/me", middleware.SetMiddlewareAUTH())
-	api.Get("/auth/acl", middleware.SetMiddlewareAUTH())
-	api.Get("/portal", middleware.SetMiddlewareAUTH())
+	api.Get("/auth/logout", middleware.SetMiddlewareAuthNoAcl())
+	api.Get("/auth/me", middleware.SetMiddlewareAuthNoAcl())
+	api.Get("/auth/acl", middleware.SetMiddlewareAuthNoAcl())
+	api.Get("/portal", middleware.SetMiddlewareAuthNoAcl())
 
 	api.Post("/portal", middleware.SetMiddlewareAUTH(), controllers.SavePortal)
 	api.Get("/portal/:id", middleware.SetMiddlewareAUTH(), controllers.GetPortalById)

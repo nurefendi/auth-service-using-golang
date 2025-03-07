@@ -2,13 +2,17 @@ package usecase
 
 import (
 	"auth-service/dto"
+	jwtMidleware "auth-service/middleware/jwt"
 	"auth-service/tools/helper"
 	"auth-service/tools/locals"
 	"strings"
+	"time"
 
 	"auth-service/repository/dao"
 	authUserRepository "auth-service/repository/database/authuser"
+	authUserGroupRepository "auth-service/repository/database/authusergroup"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/google/uuid"
@@ -20,7 +24,78 @@ func AuthUSeCase() Auth {
 
 // Login implements Auth.
 func (a *authUseCase) Login(c *fiber.Ctx) *fiber.Error {
-	panic("unimplemented")
+	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
+	payload := locals.GetLocals[dto.AuthUserLoginRequest](c,locals.PayloadLocalKey)
+	log.Info(currentAccess.RequestID, " do login ", payload.Email)
+	data, errr := authUserRepository.FindByEmail(c, &payload.Email)
+	if errr != nil {
+		log.Error(currentAccess.RequestID, errr.Message)
+		return errr
+	}
+	if data.ID == uuid.Nil {
+		log.Error(currentAccess.RequestID, " Data not found!")
+		return fiber.NewError(fiber.StatusBadRequest, "Wrong Email!")
+	}
+	err := helper.CompareHashBcript(payload.Password, data.Password)
+	if err != nil {
+		log.Error(currentAccess.RequestID, err.Error())
+		return fiber.NewError(fiber.StatusBadRequest, "Wrong Password!")
+	}
+	userGroups, errr := authUserGroupRepository.FindByUserId(c, data.ID)
+	if errr != nil {
+		log.Error(currentAccess.RequestID, errr.Message)
+		return errr
+	}
+
+	groupIds := make([]uuid.UUID, len(*userGroups))
+	for _, v := range *userGroups {
+		groupIds = append(groupIds, v.GroupID)
+	}
+	expirationTime := time.Now().Add(15 * time.Minute)
+	refreshExpiration := time.Now().Add(7 * 24 * time.Hour)
+
+	payloadGenerateToken := dto.CurrentUserAccess{
+		UserID: data.ID,
+		UserName: data.Username,
+		Email: data.Email,
+		GroupIDs: groupIds,
+		FullName: data.FullName,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: expirationTime.Unix(),
+		},
+	}
+	token, err := jwtMidleware.GenerateToken(payloadGenerateToken)
+
+	if err != nil {
+		log.Error(currentAccess.RequestID, err.Error())
+		return fiber.NewError(fiber.StatusInternalServerError, "Failed generate token!")
+	}
+
+	payloadGenerateToken.StandardClaims = jwt.StandardClaims{
+		ExpiresAt: refreshExpiration.Unix(),
+	}
+	refreshToken, err := jwtMidleware.GenerateToken(payloadGenerateToken)
+	if err != nil {
+		log.Error(currentAccess.RequestID, err.Error())
+		return fiber.NewError(fiber.StatusInternalServerError, "Failed generate refresh token!")
+	}
+	c.Cookie(&fiber.Cookie{
+		Name:     "token",
+		Value:    *token,
+		Expires:  expirationTime,
+		Secure:   true,
+		HTTPOnly: true,
+		SameSite: "Strict",
+	})
+	c.Cookie(&fiber.Cookie{
+		Name:     "refresh_token",
+		Value:    *refreshToken,
+		Expires:  refreshExpiration,
+		Secure:   true,
+		HTTPOnly: true,
+		SameSite: "Strict",
+	})
+	return nil
 }
 
 // Register implements Auth.

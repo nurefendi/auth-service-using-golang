@@ -43,7 +43,7 @@ func SetMiddlewareAUTH() fiber.Handler {
 			UserID: dataClaim["userId"].(uuid.UUID),
 			UserName: dataClaim["userName"].(string),
 			Email: dataClaim["email"].(string),
-			GroupID: dataClaim["groupId"].(uuid.UUID),
+			GroupIDs: dataClaim["groupIds"].([]uuid.UUID),
 		}
 		locals.SetLocals(c, dto.UserLocals{
 			RequestID: getRequestId(c),
@@ -58,6 +58,36 @@ func SetMiddlewareAUTH() fiber.Handler {
 			SendString("unauthorized access")
 		}
 
+		return c.Next()
+	}
+}
+
+func SetMiddlewareAuthNoAcl() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		authHeader := c.Get(fiber.HeaderAuthorization)
+		if authHeader == "" || !strings.HasPrefix(authHeader, constants.BEARER) {
+			return c.Status(fiber.StatusUnauthorized).
+			SendString("Missing or invalid token")
+		}
+		tokenString := strings.TrimPrefix(authHeader, constants.BEARER)
+
+		dataClaim, err := jwt.JwtClaims(c, tokenString)
+		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).
+			SendString("Invalid token")
+		}
+		userAccess := dto.CurrentUserAccess{
+			UserID: dataClaim["userId"].(uuid.UUID),
+			UserName: dataClaim["userName"].(string),
+			Email: dataClaim["email"].(string),
+			GroupIDs: dataClaim["groupIds"].([]uuid.UUID),
+		}
+		locals.SetLocals(c, dto.UserLocals{
+			RequestID: getRequestId(c),
+			LanguageCode: getLanguageCode(c),
+			ChannelID: getChannelId(c),
+			UserAccess: userAccess,
+		})
 		return c.Next()
 	}
 }

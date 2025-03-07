@@ -9,15 +9,21 @@ type AuthUserRegisterRequest struct {
 	FullName string `json:"fullName" validate:"required,max=255"`
 	Email    string `json:"email" validate:"required,email,max=255"`
 	Password string `json:"password" validate:"required,min=6,max=255"`
-	Gender   int   `json:"gender" validate:"required"`
+	Gender   int    `json:"gender" validate:"required"`
+}
+
+type AuthUserLoginRequest struct {
+	Email    string `json:"email" validate:"required,email,max=255"`
+	Password string `json:"password" validate:"required"`
 }
 
 type CurrentUserAccess struct {
 	jwt.StandardClaims
-	UserID   uuid.UUID `json:"userId"`
-	UserName string    `json:"userName"`
-	Email    string    `json:"email"`
-	GroupID  uuid.UUID `json:"groupId"`
+	UserID   uuid.UUID   `json:"userId"`
+	UserName string      `json:"userName"`
+	Email    string      `json:"email"`
+	GroupIDs []uuid.UUID `json:"groupIds"`
+	FullName string      `json:"fullName" `
 }
 
 type UserLocals struct {

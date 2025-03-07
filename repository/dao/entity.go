@@ -46,10 +46,10 @@ type AuthGroup struct {
 
 // AuthUserGroup represents the auth_user_group table
 type AuthUserGroup struct {
-	UserID  uuid.UUID `gorm:"type:uuid;not null"`
-	GroupID uuid.UUID `gorm:"type:uuid;not null"`
-	User    AuthUser  `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE"`
-	Group   AuthGroup `gorm:"foreignKey:GroupID;references:ID;constraint:OnDelete:CASCADE"`
+	UserID  uuid.UUID   `gorm:"type:uuid;not null"`
+	GroupID uuid.UUID   `gorm:"type:uuid;not null"`
+	User    AuthUser    `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE"`
+	Group   []AuthGroup `gorm:"foreignKey:GroupID;references:ID;constraint:OnDelete:CASCADE"`
 	AuditorDAO
 }
 

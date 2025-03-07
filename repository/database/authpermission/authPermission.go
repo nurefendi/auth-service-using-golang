@@ -11,6 +11,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 func Save(c *fiber.Ctx, data *dao.AuthPermission) error {
@@ -72,13 +73,13 @@ func FindByGroupIdAndPathAndMethod(c *fiber.Ctx) (bool, error) {
 			FROM auth_permission ap 
 			INNER JOIN auth_function af ON ap.function_id = af.id 
 			WHERE af.path = ? 
-			AND ap.group_id = ? 
+			AND ap.group_id in (?) 
 			AND ` + permissionColumn + ` = 1
 		) 
 	`
 
 	var isExist bool
-	err := db.Raw(query, c.Path(), currentAccess.UserAccess.GroupID).Scan(&isExist).Error
+	err := db.Raw(query, c.Path(), gorm.Expr("?", currentAccess.UserAccess.GroupIDs)).Scan(&isExist).Error
 	if err != nil {
 		log.Error(currentAccess.RequestID, " error ", err.Error())
 		return false, err
