@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
+	"github.com/google/uuid"
 )
 
 func Save(c *fiber.Ctx) *fiber.Error {
@@ -56,6 +57,31 @@ func FindByEmail(c *fiber.Ctx, email *string) (*dao.AuthUser, *fiber.Error) {
 	}
 
 	return &data, nil
+}
+
+func FindById(c *fiber.Ctx, id uuid.UUID) (dao.AuthUser, *fiber.Error) {
+	db := database.GetDBConnection(c)
+	currentAcess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
+	if db == nil {
+		log.Error(currentAcess.RequestID, " error cannot find db connection")
+		return dao.AuthUser{}, &fiber.Error{
+			Code: fiber.StatusInternalServerError,
+			Message: "Unable to conect database",
+		}
+	}
+	var data dao.AuthUser
+	err := db.Model(&dao.AuthUser{}).
+		Where("id = ?", id).
+		Find(&data).Error
+	if err != nil {
+		log.Error(currentAcess.RequestID, err.Error())
+		return dao.AuthUser{}, &fiber.Error{
+			Code: fiber.StatusUnprocessableEntity,
+			Message: err.Error(),
+		}
+	}
+
+	return data, nil
 }
 
 func FindByUserName(c *fiber.Ctx, username *string) (*dao.AuthUser, *fiber.Error) {

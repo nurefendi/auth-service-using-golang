@@ -3,12 +3,15 @@ package middleware
 import (
 	"auth-service/common/constants"
 	"auth-service/dto"
-	"auth-service/middleware/jwt"
+	jwtMidleware "auth-service/middleware/jwt"
 	authPermissionRepository "auth-service/repository/database/authpermission"
+	authRefreshTokenRepository "auth-service/repository/database/autrefreshtokens"
 	"auth-service/tools/locals"
 	"errors"
 	"strings"
+	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
@@ -27,15 +30,28 @@ func SetMiddlewareJSON() fiber.Handler {
 
 func SetMiddlewareAUTH() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		authHeader := c.Get(fiber.HeaderAuthorization)
-		if authHeader == "" || !strings.HasPrefix(authHeader, constants.BEARER) {
+		tokenString := c.Cookies("token")
+		if tokenString == "" {
 			return c.Status(fiber.StatusUnauthorized).
 			SendString("Missing or invalid token")
 		}
-		tokenString := strings.TrimPrefix(authHeader, constants.BEARER)
-
-		dataClaim, err := jwt.JwtClaims(c, tokenString)
+		dataClaim, err := jwtMidleware.JwtClaims(c, tokenString)
 		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).
+			SendString("Invalid token")
+		}
+		refreshToken := c.Cookies("refresh_token")
+		if refreshToken == "" {
+			return c.Status(fiber.StatusUnauthorized).
+			SendString("Invalid token")
+		}
+
+		dataRefreshToken, err := authRefreshTokenRepository.FindByUserIdAndToken(c, dataClaim["userId"].(uuid.UUID), refreshToken)
+		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).
+			SendString("Invalid token")
+		}
+		if dataRefreshToken.ID == uuid.Nil {
 			return c.Status(fiber.StatusUnauthorized).
 			SendString("Invalid token")
 		}
@@ -45,6 +61,20 @@ func SetMiddlewareAUTH() fiber.Handler {
 			Email: dataClaim["email"].(string),
 			GroupIDs: dataClaim["groupIds"].([]uuid.UUID),
 		}
+		expirationTime := time.Now().Add(15 * time.Minute)
+		userAccess.StandardClaims = jwt.StandardClaims{
+			ExpiresAt: expirationTime.Unix(),
+		}
+		token, _ := jwtMidleware.GenerateToken(userAccess)
+		c.Cookie(&fiber.Cookie{
+			Name:     "token",
+			Value:    *token,
+			Expires:  expirationTime,
+			Secure:   true,
+			HTTPOnly: true,
+			SameSite: "Strict",
+		})
+
 		locals.SetLocals(c, dto.UserLocals{
 			RequestID: getRequestId(c),
 			LanguageCode: getLanguageCode(c),
@@ -64,15 +94,28 @@ func SetMiddlewareAUTH() fiber.Handler {
 
 func SetMiddlewareAuthNoAcl() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		authHeader := c.Get(fiber.HeaderAuthorization)
-		if authHeader == "" || !strings.HasPrefix(authHeader, constants.BEARER) {
+		tokenString := c.Cookies("token")
+		if tokenString == "" {
 			return c.Status(fiber.StatusUnauthorized).
 			SendString("Missing or invalid token")
 		}
-		tokenString := strings.TrimPrefix(authHeader, constants.BEARER)
-
-		dataClaim, err := jwt.JwtClaims(c, tokenString)
+		dataClaim, err := jwtMidleware.JwtClaims(c, tokenString)
 		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).
+			SendString("Invalid token")
+		}
+		refreshToken := c.Cookies("refresh_token")
+		if refreshToken == "" {
+			return c.Status(fiber.StatusUnauthorized).
+			SendString("Invalid token")
+		}
+
+		dataRefreshToken, err := authRefreshTokenRepository.FindByUserIdAndToken(c, dataClaim["userId"].(uuid.UUID), refreshToken)
+		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).
+			SendString("Invalid token")
+		}
+		if dataRefreshToken.ID == uuid.Nil {
 			return c.Status(fiber.StatusUnauthorized).
 			SendString("Invalid token")
 		}
@@ -82,6 +125,20 @@ func SetMiddlewareAuthNoAcl() fiber.Handler {
 			Email: dataClaim["email"].(string),
 			GroupIDs: dataClaim["groupIds"].([]uuid.UUID),
 		}
+		expirationTime := time.Now().Add(15 * time.Minute)
+		userAccess.StandardClaims = jwt.StandardClaims{
+			ExpiresAt: expirationTime.Unix(),
+		}
+		token, _ := jwtMidleware.GenerateToken(userAccess)
+		c.Cookie(&fiber.Cookie{
+			Name:     "token",
+			Value:    *token,
+			Expires:  expirationTime,
+			Secure:   true,
+			HTTPOnly: true,
+			SameSite: "Strict",
+		})
+
 		locals.SetLocals(c, dto.UserLocals{
 			RequestID: getRequestId(c),
 			LanguageCode: getLanguageCode(c),

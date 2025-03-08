@@ -16,6 +16,8 @@ type (
 		CheckEmailExist(c *fiber.Ctx, email *string) *fiber.Error
 		CheckUserNameExist(c *fiber.Ctx, userName *string) *fiber.Error
 		Login(c *fiber.Ctx) *fiber.Error
+		Logout(c *fiber.Ctx) *fiber.Error
+		RefreshToken(c *fiber.Ctx) *fiber.Error
 	}
 	Portal interface {
 		Save(c *fiber.Ctx, data *dto.PortalDto) *fiber.Error

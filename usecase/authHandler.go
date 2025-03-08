@@ -11,6 +11,7 @@ import (
 	"auth-service/repository/dao"
 	authUserRepository "auth-service/repository/database/authuser"
 	authUserGroupRepository "auth-service/repository/database/authusergroup"
+	authRefreshTokensRepository "auth-service/repository/database/autrefreshtokens"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber/v2"
@@ -51,50 +52,15 @@ func (a *authUseCase) Login(c *fiber.Ctx) *fiber.Error {
 	for _, v := range *userGroups {
 		groupIds = append(groupIds, v.GroupID)
 	}
-	expirationTime := time.Now().Add(15 * time.Minute)
-	refreshExpiration := time.Now().Add(7 * 24 * time.Hour)
 
-	payloadGenerateToken := dto.CurrentUserAccess{
+	generateToken(c, dto.CurrentUserAccess{
 		UserID: data.ID,
 		UserName: data.Username,
 		Email: data.Email,
-		GroupIDs: groupIds,
 		FullName: data.FullName,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expirationTime.Unix(),
-		},
-	}
-	token, err := jwtMidleware.GenerateToken(payloadGenerateToken)
-
-	if err != nil {
-		log.Error(currentAccess.RequestID, err.Error())
-		return fiber.NewError(fiber.StatusInternalServerError, "Failed generate token!")
-	}
-
-	payloadGenerateToken.StandardClaims = jwt.StandardClaims{
-		ExpiresAt: refreshExpiration.Unix(),
-	}
-	refreshToken, err := jwtMidleware.GenerateToken(payloadGenerateToken)
-	if err != nil {
-		log.Error(currentAccess.RequestID, err.Error())
-		return fiber.NewError(fiber.StatusInternalServerError, "Failed generate refresh token!")
-	}
-	c.Cookie(&fiber.Cookie{
-		Name:     "token",
-		Value:    *token,
-		Expires:  expirationTime,
-		Secure:   true,
-		HTTPOnly: true,
-		SameSite: "Strict",
+		GroupIDs: groupIds,
 	})
-	c.Cookie(&fiber.Cookie{
-		Name:     "refresh_token",
-		Value:    *refreshToken,
-		Expires:  refreshExpiration,
-		Secure:   true,
-		HTTPOnly: true,
-		SameSite: "Strict",
-	})
+	
 	return nil
 }
 
@@ -137,7 +103,6 @@ func (a *authUseCase) Register(c *fiber.Ctx) *fiber.Error {
 	}
 	return nil
 }
-
 // CheckEmailExist implements Auth.
 func (a *authUseCase) CheckEmailExist(c *fiber.Ctx, email *string) *fiber.Error {
 	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
@@ -178,5 +143,116 @@ func (a *authUseCase) CheckUserNameExist(c *fiber.Ctx, userNames *string) *fiber
 			Message: "email exist",
 		}
 	}
+	return nil
+}
+
+// RefreshToken implements Auth.
+func (a *authUseCase) RefreshToken(c *fiber.Ctx) *fiber.Error {
+	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
+	data, err := authRefreshTokensRepository.FindByUserIdAndToken(c, currentAccess.UserAccess.UserID, c.Cookies("refresh_token"))
+	if err != nil {
+		log.Error(currentAccess.RequestID, err.Error())
+		return fiber.NewError(fiber.StatusUnauthorized, "Unautorized!")
+	}
+	if data.ID == uuid.Nil {
+		log.Error(currentAccess.RequestID, "Token not found!")
+		return fiber.NewError(fiber.StatusUnauthorized, "Unautorized!")
+	}
+
+	dataUser, errr := authUserRepository.FindById(c, currentAccess.UserAccess.UserID)
+	if errr != nil {
+		return errr
+	}
+	userGroups, errr := authUserGroupRepository.FindByUserId(c, data.ID)
+	if errr != nil {
+		log.Error(currentAccess.RequestID, errr.Message)
+		return errr
+	}
+
+	groupIds := make([]uuid.UUID, len(*userGroups))
+	for _, v := range *userGroups {
+		groupIds = append(groupIds, v.GroupID)
+	}
+	generateToken(c, dto.CurrentUserAccess{
+		UserID: dataUser.ID,
+		UserName: dataUser.Username,
+		Email: dataUser.Email,
+		FullName: dataUser.FullName,
+		GroupIDs: groupIds,
+	})
+
+	err = authRefreshTokensRepository.DeleteByUserIdAndToken(c, dataUser.ID, c.Cookies("refresh_token"))
+	if err != nil {
+		log.Error(currentAccess.RequestID, err.Error())
+		return fiber.NewError(fiber.StatusUnauthorized, "Unautorized!")
+	}
+	return nil
+
+}
+func (a *authUseCase) Logout(c *fiber.Ctx) *fiber.Error {
+	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
+	log.Info(currentAccess.RequestID, " Logout. ip:", c.IP())
+	err := authRefreshTokensRepository.DeleteByUserId(c, currentAccess.UserAccess.UserID)
+	if err != nil {
+		log.Error(currentAccess.RequestID, err.Error())
+		return fiber.NewError(fiber.StatusNotAcceptable, "Already logout")
+	}
+	c.ClearCookie("token", "refresh_token")
+	return nil
+}
+
+func generateToken(c *fiber.Ctx, payloadGenerateToken dto.CurrentUserAccess) *fiber.Error {
+	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
+	expirationTime := time.Now().Add(15 * time.Minute)
+	refreshExpiration := time.Now().Add(7 * 24 * time.Hour)
+
+	payloadGenerateToken.StandardClaims = jwt.StandardClaims{
+		ExpiresAt: expirationTime.Unix(),
+	}
+	token, err := jwtMidleware.GenerateToken(payloadGenerateToken)
+
+	if err != nil {
+		log.Error(currentAccess.RequestID, err.Error())
+		return fiber.NewError(fiber.StatusInternalServerError, "Failed generate token!")
+	}
+
+	payloadGenerateToken.StandardClaims = jwt.StandardClaims{
+		ExpiresAt: refreshExpiration.Unix(),
+	}
+	refreshToken, err := jwtMidleware.GenerateToken(payloadGenerateToken)
+	if err != nil {
+		log.Error(currentAccess.RequestID, err.Error())
+		return fiber.NewError(fiber.StatusInternalServerError, "Failed generate refresh token!")
+	}
+	c.Cookie(&fiber.Cookie{
+		Name:     "token",
+		Value:    *token,
+		Expires:  expirationTime,
+		Secure:   true,
+		HTTPOnly: true,
+		SameSite: "Strict",
+	})
+	c.Cookie(&fiber.Cookie{
+		Name:     "refresh_token",
+		Value:    *refreshToken,
+		Expires:  refreshExpiration,
+		Secure:   true,
+		HTTPOnly: true,
+		SameSite: "Strict",
+	})
+
+	err = authRefreshTokensRepository.Save(c, &dao.AuthRefreshTokens{
+		UserID: currentAccess.UserAccess.UserID,
+		Token: *refreshToken,
+		ExpiresAt: expirationTime,
+		AuditorDAO: dao.AuditorDAO{
+			CreatedBy: currentAccess.UserAccess.Email,
+		},
+	})
+	if err != nil {
+		log.Error(currentAccess.RequestID, err.Error())
+		return fiber.NewError(fiber.StatusUnprocessableEntity, "Failed generate token")
+	}
+
 	return nil
 }
