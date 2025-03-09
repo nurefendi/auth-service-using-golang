@@ -18,6 +18,7 @@ type (
 		Login(c *fiber.Ctx) *fiber.Error
 		Logout(c *fiber.Ctx) *fiber.Error
 		RefreshToken(c *fiber.Ctx) *fiber.Error
+		Me(c *fiber.Ctx) (dto.AuthUserResponse, *fiber.Error)
 	}
 	Portal interface {
 		Save(c *fiber.Ctx, data *dto.PortalDto) *fiber.Error

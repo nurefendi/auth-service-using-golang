@@ -22,13 +22,22 @@ type CurrentUserAccess struct {
 	UserID   uuid.UUID   `json:"userId"`
 	UserName string      `json:"userName"`
 	Email    string      `json:"email"`
-	GroupIDs []uuid.UUID `json:"groupIds"`
 	FullName string      `json:"fullName" `
 }
 
 type UserLocals struct {
-	UserAccess   CurrentUserAccess
+	UserAccess   *CurrentUserAccess
 	RequestID    string
 	LanguageCode string
 	ChannelID    string
+}
+type AuthUserResponse struct {
+	UserID     uuid.UUID   `json:"userId"`
+	UserName   string      `json:"userName"`
+	Email      string      `json:"email"`
+	GroupIDs   []uuid.UUID `json:"groupIds"`
+	FullName   string      `json:"fullName"`
+	Gender     int         `json:"gender"`
+	GenderName string      `json:"genderName"`
+	Picture    *string     `json:"picture"`
 }

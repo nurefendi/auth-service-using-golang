@@ -15,13 +15,14 @@ func HandleRouter(app *fiber.App) {
         c.Set("Version", "v1")
         return c.Next()
     })
+
 	api.Post("/auth/register", middleware.SetMiddlewareJSON(), controllers.AuthRegister)
 	api.Post("/auth/login", middleware.SetMiddlewareJSON(), controllers.AuthLogin)
 	
 	// need whitelist this path in midleware
 	api.Get("/auth/logout", middleware.SetMiddlewareAuthNoAcl(), controllers.AuthLogout)
 	api.Get("/auth/refresh-token", middleware.SetMiddlewareAuthNoAcl(), controllers.AuthRefreshTokens)
-	api.Get("/auth/me", middleware.SetMiddlewareAuthNoAcl())
+	api.Get("/auth/me", middleware.SetMiddlewareAuthNoAcl(), controllers.AuthMe)
 	api.Get("/auth/acl", middleware.SetMiddlewareAuthNoAcl())
 	api.Get("/portal", middleware.SetMiddlewareAuthNoAcl())
 

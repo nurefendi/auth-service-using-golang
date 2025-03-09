@@ -17,12 +17,12 @@ import (
 )
 
 func SetMiddlewareJSON() fiber.Handler {
-	return func(c *fiber.Ctx) error  {
+	return func(c *fiber.Ctx) error {
 		c.Request().Header.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
 		locals.SetLocals(c, dto.UserLocals{
-			RequestID: getRequestId(c),
+			RequestID:    getRequestId(c),
 			LanguageCode: getLanguageCode(c),
-			ChannelID: getChannelId(c),
+			ChannelID:    getChannelId(c),
 		})
 		return c.Next()
 	}
@@ -30,120 +30,39 @@ func SetMiddlewareJSON() fiber.Handler {
 
 func SetMiddlewareAUTH() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		tokenString := c.Cookies("token")
-		if tokenString == "" {
-			return c.Status(fiber.StatusUnauthorized).
-			SendString("Missing or invalid token")
-		}
-		dataClaim, err := jwtMidleware.JwtClaims(c, tokenString)
+		userAccess, err := getUserAccess(c)
 		if err != nil {
-			return c.Status(fiber.StatusUnauthorized).
-			SendString("Invalid token")
+			c.Status(fiber.StatusUnauthorized).
+				SendString("Invalid token")
+			return nil
 		}
-		refreshToken := c.Cookies("refresh_token")
-		if refreshToken == "" {
-			return c.Status(fiber.StatusUnauthorized).
-			SendString("Invalid token")
-		}
-
-		dataRefreshToken, err := authRefreshTokenRepository.FindByUserIdAndToken(c, dataClaim["userId"].(uuid.UUID), refreshToken)
-		if err != nil {
-			return c.Status(fiber.StatusUnauthorized).
-			SendString("Invalid token")
-		}
-		if dataRefreshToken.ID == uuid.Nil {
-			return c.Status(fiber.StatusUnauthorized).
-			SendString("Invalid token")
-		}
-		userAccess := dto.CurrentUserAccess{
-			UserID: dataClaim["userId"].(uuid.UUID),
-			UserName: dataClaim["userName"].(string),
-			Email: dataClaim["email"].(string),
-			GroupIDs: dataClaim["groupIds"].([]uuid.UUID),
-		}
-		expirationTime := time.Now().Add(15 * time.Minute)
-		userAccess.StandardClaims = jwt.StandardClaims{
-			ExpiresAt: expirationTime.Unix(),
-		}
-		token, _ := jwtMidleware.GenerateToken(userAccess)
-		c.Cookie(&fiber.Cookie{
-			Name:     "token",
-			Value:    *token,
-			Expires:  expirationTime,
-			Secure:   true,
-			HTTPOnly: true,
-			SameSite: "Strict",
-		})
-
 		locals.SetLocals(c, dto.UserLocals{
-			RequestID: getRequestId(c),
+			RequestID:    getRequestId(c),
 			LanguageCode: getLanguageCode(c),
-			ChannelID: getChannelId(c),
-			UserAccess: userAccess,
+			ChannelID:    getChannelId(c),
+			UserAccess:   userAccess,
 		})
-
-		err = getAuthorizationFunction(c)
-		if err != nil {
+		if err := getAuthorizationFunction(c); err != nil {
 			return c.Status(fiber.StatusUnauthorized).
-			SendString("unauthorized access")
+				SendString("unauthorized access")
 		}
-
 		return c.Next()
 	}
 }
 
 func SetMiddlewareAuthNoAcl() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		tokenString := c.Cookies("token")
-		if tokenString == "" {
-			return c.Status(fiber.StatusUnauthorized).
-			SendString("Missing or invalid token")
-		}
-		dataClaim, err := jwtMidleware.JwtClaims(c, tokenString)
+		userAccess, err := getUserAccess(c)
 		if err != nil {
-			return c.Status(fiber.StatusUnauthorized).
-			SendString("Invalid token")
+			c.Status(fiber.StatusUnauthorized).
+				SendString("Invalid token")
+			return nil
 		}
-		refreshToken := c.Cookies("refresh_token")
-		if refreshToken == "" {
-			return c.Status(fiber.StatusUnauthorized).
-			SendString("Invalid token")
-		}
-
-		dataRefreshToken, err := authRefreshTokenRepository.FindByUserIdAndToken(c, dataClaim["userId"].(uuid.UUID), refreshToken)
-		if err != nil {
-			return c.Status(fiber.StatusUnauthorized).
-			SendString("Invalid token")
-		}
-		if dataRefreshToken.ID == uuid.Nil {
-			return c.Status(fiber.StatusUnauthorized).
-			SendString("Invalid token")
-		}
-		userAccess := dto.CurrentUserAccess{
-			UserID: dataClaim["userId"].(uuid.UUID),
-			UserName: dataClaim["userName"].(string),
-			Email: dataClaim["email"].(string),
-			GroupIDs: dataClaim["groupIds"].([]uuid.UUID),
-		}
-		expirationTime := time.Now().Add(15 * time.Minute)
-		userAccess.StandardClaims = jwt.StandardClaims{
-			ExpiresAt: expirationTime.Unix(),
-		}
-		token, _ := jwtMidleware.GenerateToken(userAccess)
-		c.Cookie(&fiber.Cookie{
-			Name:     "token",
-			Value:    *token,
-			Expires:  expirationTime,
-			Secure:   true,
-			HTTPOnly: true,
-			SameSite: "Strict",
-		})
-
 		locals.SetLocals(c, dto.UserLocals{
-			RequestID: getRequestId(c),
+			RequestID:    getRequestId(c),
 			LanguageCode: getLanguageCode(c),
-			ChannelID: getChannelId(c),
-			UserAccess: userAccess,
+			ChannelID:    getChannelId(c),
+			UserAccess:   userAccess,
 		})
 		return c.Next()
 	}
@@ -185,4 +104,81 @@ func getAuthorizationFunction(c *fiber.Ctx) error {
 		return errors.New("unauthorized access")
 	}
 	return nil
+}
+
+func getUserAccess(c *fiber.Ctx) (*dto.CurrentUserAccess, error) {
+	tokenString := c.Cookies("token")
+	var userAccess dto.CurrentUserAccess
+	var isTokenExpired bool
+
+	if tokenString != "" {
+		dataClaim, err := jwtMidleware.JwtClaims(c, tokenString)
+		if err != nil {
+			if ve, ok := err.(*jwt.ValidationError); ok {
+				if ve.Errors&jwt.ValidationErrorExpired != 0 {
+					isTokenExpired = true
+				} else {
+					c.Status(fiber.StatusUnauthorized).
+						SendString("Invalid token")
+					return nil, errors.New("invalid token")
+				}
+			} else {
+				c.Status(fiber.StatusUnauthorized).
+					SendString("Invalid token")
+				return nil, errors.New("invalid token")
+			}
+
+		}
+		getuserId, _ := uuid.Parse(dataClaim["userId"].(string))
+		userAccess = dto.CurrentUserAccess{
+			UserID:   getuserId,
+			UserName: dataClaim["userName"].(string),
+			Email:    dataClaim["email"].(string),
+		}
+	} else {
+		isTokenExpired = true
+	}
+
+	if isTokenExpired {
+		refreshToken := c.Cookies("refresh_token")
+		if refreshToken == "" {
+			c.Status(fiber.StatusUnauthorized).
+				SendString("Invalid token")
+			return nil, errors.New("invalid token")
+		}
+		refreshClaim, err := jwtMidleware.JwtClaims(c, tokenString)
+		if err != nil {
+			c.Status(fiber.StatusUnauthorized).
+				SendString("Invalid token")
+			return nil, errors.New("invalid token")
+		}
+		dataRefreshToken, err := authRefreshTokenRepository.FindByUserIdAndToken(c, refreshClaim["userId"].(uuid.UUID), refreshToken)
+		if err != nil {
+			c.Status(fiber.StatusUnauthorized).
+				SendString("Invalid token")
+			return nil, errors.New("invalid token")
+		}
+		if dataRefreshToken.ID == uuid.Nil {
+			c.Status(fiber.StatusUnauthorized).
+				SendString("Invalid token")
+			return nil, errors.New("invalid token")
+		}
+
+		expirationTime := time.Now().Add(15 * time.Minute)
+		userAccess.StandardClaims = jwt.StandardClaims{
+			ExpiresAt: expirationTime.Unix(),
+		}
+		token, _ := jwtMidleware.GenerateToken(userAccess)
+		c.Cookie(&fiber.Cookie{
+			Name:     "token",
+			Value:    *token,
+			Expires:  expirationTime,
+			Secure:   true,
+			HTTPOnly: true,
+			SameSite: "Strict",
+		})
+
+	}
+
+	return &userAccess, nil
 }

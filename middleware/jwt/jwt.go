@@ -16,7 +16,7 @@ func JwtClaims(c *fiber.Ctx, tokenString string) (jwt.MapClaims, error) {
 		return secretKey, nil
 	})
 	if err != nil {
-		log.Error(c.Context().ConnID(), " ", err.Error())
+		log.Error(c.IP(), " ", err.Error())
 		return nil, err
 	}
 
@@ -24,7 +24,7 @@ func JwtClaims(c *fiber.Ctx, tokenString string) (jwt.MapClaims, error) {
 		return claims, nil
 	}
 
-	return nil, errors.New("Unautorized")
+	return nil, errors.New("invalid token")
 }
 
 func GenerateToken(claim jwt.Claims) (*string, error) {

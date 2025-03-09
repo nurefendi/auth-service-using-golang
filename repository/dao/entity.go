@@ -8,7 +8,7 @@ import (
 )
 
 type AuditorDAO struct {
-	ID         uuid.UUID  `gorm:"primaryKey;type:uuid"`
+	ID         uuid.UUID  `gorm:"primaryKey;type:uuid;default:(uuid())"`
 	CreatedBy  string     `gorm:"'created_by'"`
 	CreatedAt  time.Time  `gorm:"autoCreateTime:true'created_at'"`
 	ModifiedBy *string    `gorm:"'modified_by'"`
@@ -25,15 +25,16 @@ type GenderLang struct {
 
 // AuthUser represents the auth_user table
 type AuthUser struct {
-	FullName   string       `gorm:"type:varchar(255);not null"`
-	Email      string       `gorm:"type:varchar(100);not null"`
-	Username   string       `gorm:"type:varchar(100);not null"`
-	Password   string       `gorm:"type:varchar(255);not null"`
-	Gender     int          `gorm:"type:tinyint(1);not null"`
-	Telephone  *string      `gorm:"type:varchar(15)"`
-	HasDeleted bool         `gorm:"not null;default:false"`
-	Picture    *string      `gorm:"type:varchar(255)"`
-	GenderLang []GenderLang `gorm:"foreignKey:Gender;references:Gender"`
+	FullName   string          `gorm:"type:varchar(255);not null"`
+	Email      string          `gorm:"type:varchar(100);not null"`
+	Username   string          `gorm:"type:varchar(100);not null"`
+	Password   string          `gorm:"type:varchar(255);not null"`
+	Gender     int             `gorm:"type:tinyint(1);not null"`
+	Telephone  *string         `gorm:"type:varchar(15)"`
+	HasDeleted bool            `gorm:"not null;default:false"`
+	Picture    *string         `gorm:"type:varchar(255)"`
+	GenderLang []GenderLang    `gorm:"foreignKey:Gender;references:Gender"`
+	Goups      []AuthUserGroup `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCAD"`
 	AuditorDAO
 }
 
@@ -48,8 +49,8 @@ type AuthGroup struct {
 type AuthUserGroup struct {
 	UserID  uuid.UUID   `gorm:"type:uuid;not null"`
 	GroupID uuid.UUID   `gorm:"type:uuid;not null"`
-	User    AuthUser    `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE"`
-	Group   []AuthGroup `gorm:"foreignKey:GroupID;references:ID;constraint:OnDelete:CASCADE"`
+	User    AuthUser    `gorm:"foreignKey:ID;references:UserID;constraint:OnDelete:CASCADE"`
+	Group   []AuthGroup `gorm:"foreignKey:ID;references:GroupID;constraint:OnDelete:CASCADE"`
 	AuditorDAO
 }
 

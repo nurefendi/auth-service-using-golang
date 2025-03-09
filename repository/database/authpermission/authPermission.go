@@ -7,6 +7,7 @@ import (
 	"auth-service/repository/dao"
 	"auth-service/tools/locals"
 	"errors"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
@@ -62,7 +63,7 @@ func FindByGroupIdAndPathAndMethod(c *fiber.Ctx) (bool, error) {
 		enums.POST.Name():   "ap.grant_create",
 	}
 
-	permissionColumn, ok := permissions[c.Method()]
+	permissionColumn, ok := permissions[strings.ToUpper(c.Method())]
 	if !ok {
 		return false, errors.New("unsupported HTTP method")
 	}
@@ -73,13 +74,13 @@ func FindByGroupIdAndPathAndMethod(c *fiber.Ctx) (bool, error) {
 			FROM auth_permission ap 
 			INNER JOIN auth_function af ON ap.function_id = af.id 
 			WHERE af.path = ? 
-			AND ap.group_id in (?) 
+			AND ap.group_id in (SELECT group_id FROM auth_user_group WHERE user_id = ? ) 
 			AND ` + permissionColumn + ` = 1
 		) 
 	`
 
 	var isExist bool
-	err := db.Raw(query, c.Path(), gorm.Expr("?", currentAccess.UserAccess.GroupIDs)).Scan(&isExist).Error
+	err := db.Raw(query, c.Path(), gorm.Expr("?", currentAccess.UserAccess.UserID)).Scan(&isExist).Error
 	if err != nil {
 		log.Error(currentAccess.RequestID, " error ", err.Error())
 		return false, err

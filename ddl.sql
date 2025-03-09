@@ -129,3 +129,7 @@ CREATE TABLE IF NOT EXISTS auth_refresh_tokens (
     modified_by VARCHAR(255) NULL,
     FOREIGN KEY (user_id) REFERENCES auth_user(id) ON DELETE CASCADE
 );
+-- default group
+INSERT INTO auth_group (id, `name`, description, created_by, created_at)
+VALUE
+('28cfc72c-fbc5-11ef-95a5-1c697a672693', "Default", "Default Group", "System", NOW())

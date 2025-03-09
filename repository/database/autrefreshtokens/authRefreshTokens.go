@@ -50,7 +50,7 @@ func DeleteByUserIdAndToken(c *fiber.Ctx, userId uuid.UUID, token string) error 
 	}
 
 	log.Info(currentAccess.RequestID, " Deleted record, affected rows: ", deleteRecord.RowsAffected)
-	return c.Status(fiber.StatusOK).SendString("Record deleted successfully")
+	return c.Status(fiber.StatusOK).SendString("Ok")
 }
 
 func DeleteByUserId(c *fiber.Ctx, userId uuid.UUID) error {

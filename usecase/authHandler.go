@@ -5,6 +5,7 @@ import (
 	jwtMidleware "auth-service/middleware/jwt"
 	"auth-service/tools/helper"
 	"auth-service/tools/locals"
+	"os"
 	"strings"
 	"time"
 
@@ -42,28 +43,16 @@ func (a *authUseCase) Login(c *fiber.Ctx) *fiber.Error {
 		log.Error(currentAccess.RequestID, err.Error())
 		return fiber.NewError(fiber.StatusBadRequest, "Wrong Password!")
 	}
-	userGroups, errr := authUserGroupRepository.FindByUserId(c, data.ID)
-	if errr != nil {
-		log.Error(currentAccess.RequestID, errr.Message)
-		return errr
-	}
-
-	groupIds := make([]uuid.UUID, len(*userGroups))
-	for _, v := range *userGroups {
-		groupIds = append(groupIds, v.GroupID)
-	}
 
 	generateToken(c, dto.CurrentUserAccess{
 		UserID: data.ID,
 		UserName: data.Username,
 		Email: data.Email,
 		FullName: data.FullName,
-		GroupIDs: groupIds,
 	})
 	
 	return nil
 }
-
 // Register implements Auth.
 func (a *authUseCase) Register(c *fiber.Ctx) *fiber.Error {
 	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
@@ -85,7 +74,9 @@ func (a *authUseCase) Register(c *fiber.Ctx) *fiber.Error {
 			Message: fibererr.Error(),
 		}
 	}
-	c.Locals(locals.Entity, dao.AuthUser{
+
+	defaultGroupId, _ := uuid.Parse(os.Getenv("DEFAULT_GROUP"))
+	dataUser := dao.AuthUser{
 		FullName: payload.FullName,
 		Email: payload.Email,
 		Password: password,
@@ -96,11 +87,20 @@ func (a *authUseCase) Register(c *fiber.Ctx) *fiber.Error {
 			ID: uuid.New(),
 			CreatedBy: c.IP(),
 		},
-	})
+	}
+	c.Locals(locals.Entity, dataUser)
 	fibererr = authUserRepository.Save(c)
 	if fibererr != nil {
 		return fibererr
 	}
+	authUserGroupRepository.Save(c, dao.AuthUserGroup{
+		GroupID: defaultGroupId,
+		UserID: dataUser.ID,
+		AuditorDAO: dao.AuditorDAO{
+			CreatedBy: c.IP(),
+			ID: uuid.New(),
+		},
+	})
 	return nil
 }
 // CheckEmailExist implements Auth.
@@ -163,22 +163,11 @@ func (a *authUseCase) RefreshToken(c *fiber.Ctx) *fiber.Error {
 	if errr != nil {
 		return errr
 	}
-	userGroups, errr := authUserGroupRepository.FindByUserId(c, data.ID)
-	if errr != nil {
-		log.Error(currentAccess.RequestID, errr.Message)
-		return errr
-	}
-
-	groupIds := make([]uuid.UUID, len(*userGroups))
-	for _, v := range *userGroups {
-		groupIds = append(groupIds, v.GroupID)
-	}
 	generateToken(c, dto.CurrentUserAccess{
 		UserID: dataUser.ID,
 		UserName: dataUser.Username,
 		Email: dataUser.Email,
 		FullName: dataUser.FullName,
-		GroupIDs: groupIds,
 	})
 
 	err = authRefreshTokensRepository.DeleteByUserIdAndToken(c, dataUser.ID, c.Cookies("refresh_token"))
@@ -191,15 +180,52 @@ func (a *authUseCase) RefreshToken(c *fiber.Ctx) *fiber.Error {
 }
 func (a *authUseCase) Logout(c *fiber.Ctx) *fiber.Error {
 	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
+	log.Infof("currentAccess", currentAccess)
 	log.Info(currentAccess.RequestID, " Logout. ip:", c.IP())
+	clearCookie(c)
+	c.ClearCookie("token", "refresh_token")
 	err := authRefreshTokensRepository.DeleteByUserId(c, currentAccess.UserAccess.UserID)
 	if err != nil {
 		log.Error(currentAccess.RequestID, err.Error())
 		return fiber.NewError(fiber.StatusNotAcceptable, "Already logout")
 	}
-	c.ClearCookie("token", "refresh_token")
 	return nil
 }
+// Me implements Auth.
+func (a *authUseCase) Me(c *fiber.Ctx) (dto.AuthUserResponse, *fiber.Error) {
+	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
+	data, err := authUserRepository.FindById(c, currentAccess.UserAccess.UserID)
+	if err != nil {
+		return dto.AuthUserResponse{}, err
+	}
+	genderName := ""
+	for _, v := range data.GenderLang {
+		if v.Lang == currentAccess.LanguageCode {
+			genderName = v.Name
+		}
+	}
+	userGroups, errr := authUserGroupRepository.FindByUserId(c, data.ID)
+	if errr != nil {
+		log.Error(currentAccess.RequestID, errr.Message)
+		return dto.AuthUserResponse{}, errr
+	}
+
+	groupIds := make([]uuid.UUID, len(*userGroups))
+	for _, v := range *userGroups {
+		groupIds = append(groupIds, v.GroupID)
+	}
+	return dto.AuthUserResponse{
+		UserID: data.ID,
+		UserName: data.Username,
+		Email: data.Email,
+		FullName: data.FullName,
+		Gender: data.Gender,
+		GenderName: genderName,
+		Picture: data.Picture,
+		GroupIDs: groupIds,
+	}, nil
+}
+
 
 func generateToken(c *fiber.Ctx, payloadGenerateToken dto.CurrentUserAccess) *fiber.Error {
 	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
@@ -242,11 +268,11 @@ func generateToken(c *fiber.Ctx, payloadGenerateToken dto.CurrentUserAccess) *fi
 	})
 
 	err = authRefreshTokensRepository.Save(c, &dao.AuthRefreshTokens{
-		UserID: currentAccess.UserAccess.UserID,
+		UserID: payloadGenerateToken.UserID,
 		Token: *refreshToken,
 		ExpiresAt: expirationTime,
 		AuditorDAO: dao.AuditorDAO{
-			CreatedBy: currentAccess.UserAccess.Email,
+			CreatedBy: payloadGenerateToken.Email,
 		},
 	})
 	if err != nil {
@@ -255,4 +281,22 @@ func generateToken(c *fiber.Ctx, payloadGenerateToken dto.CurrentUserAccess) *fi
 	}
 
 	return nil
+}
+
+func clearCookie(c *fiber.Ctx) {
+	c.Cookie(&fiber.Cookie{
+		Name:     "token",
+		Expires:  time.Now().Add(-(time.Hour * 2)),
+		Secure:   true,
+		HTTPOnly: true,
+		SameSite: "Strict",
+	})
+	c.Cookie(&fiber.Cookie{
+		Name:     "refresh_token",
+		Expires:  time.Now().Add(-(time.Hour * 2)),
+		Secure:   true,
+		HTTPOnly: true,
+		SameSite: "Strict",
+	})
+
 }

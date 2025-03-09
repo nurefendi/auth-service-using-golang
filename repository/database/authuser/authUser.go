@@ -72,6 +72,7 @@ func FindById(c *fiber.Ctx, id uuid.UUID) (dao.AuthUser, *fiber.Error) {
 	var data dao.AuthUser
 	err := db.Model(&dao.AuthUser{}).
 		Where("id = ?", id).
+		Preload("GenderLang").
 		Find(&data).Error
 	if err != nil {
 		log.Error(currentAcess.RequestID, err.Error())

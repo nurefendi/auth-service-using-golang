@@ -80,3 +80,14 @@ func AuthRefreshTokens(c *fiber.Ctx) error {
 	}
 	return c.SendStatus(fiber.StatusOK)
 }
+func AuthMe(c *fiber.Ctx) error {
+	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
+	data, fibererr := usecase.AuthUSeCase().Me(c)
+	if fibererr != nil {
+		log.Error(currentAccess.RequestID, fibererr.Message)
+		c.Status(fibererr.Code).SendString(fibererr.Message)
+		return nil
+	}
+	return c.Status(fiber.StatusOK).
+	JSON(data)
+}
