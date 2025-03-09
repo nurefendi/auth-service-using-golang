@@ -23,15 +23,13 @@ func HandleRouter(app *fiber.App) {
 	api.Get("/auth/logout", middleware.SetMiddlewareAuthNoAcl(), controllers.AuthLogout)
 	api.Get("/auth/refresh-token", middleware.SetMiddlewareAuthNoAcl(), controllers.AuthRefreshTokens)
 	api.Get("/auth/me", middleware.SetMiddlewareAuthNoAcl(), controllers.AuthMe)
-	api.Get("/auth/acl", middleware.SetMiddlewareAuthNoAcl())
+	api.Get("/auth/chek-access", middleware.SetMiddlewareAuthNoAcl(), controllers.CheckAccess)
 	api.Get("/portal", middleware.SetMiddlewareAuthNoAcl())
-
 	api.Post("/portal", middleware.SetMiddlewareAUTH(), controllers.SavePortal)
 	api.Get("/portal/:id", middleware.SetMiddlewareAUTH(), controllers.GetPortalById)
 	api.Put("/portal", middleware.SetMiddlewareAUTH(), controllers.UpdatePortal)
 	api.Delete("/portal/:id", middleware.SetMiddlewareAUTH(), controllers.DeletePortalById)
-	
-	api.Get("/acl/function", middleware.SetMiddlewareAUTH())
+	api.Get("/acl/function", middleware.SetMiddlewareAuthNoAcl())
 	api.Get("/acl/function/:id", middleware.SetMiddlewareAUTH())
 	api.Post("/acl/function", middleware.SetMiddlewareAUTH())
 	api.Put("/acl/function", middleware.SetMiddlewareAUTH())

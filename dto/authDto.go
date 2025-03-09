@@ -19,10 +19,10 @@ type AuthUserLoginRequest struct {
 
 type CurrentUserAccess struct {
 	jwt.StandardClaims
-	UserID   uuid.UUID   `json:"userId"`
-	UserName string      `json:"userName"`
-	Email    string      `json:"email"`
-	FullName string      `json:"fullName" `
+	UserID   uuid.UUID `json:"userId"`
+	UserName string    `json:"userName"`
+	Email    string    `json:"email"`
+	FullName string    `json:"fullName" `
 }
 
 type UserLocals struct {
@@ -40,4 +40,8 @@ type AuthUserResponse struct {
 	Gender     int         `json:"gender"`
 	GenderName string      `json:"genderName"`
 	Picture    *string     `json:"picture"`
+}
+type AuthCheckAccessRequest struct {
+	Path   string `json:"path" validate:"required"`
+	Mathod string `json:"method" validate:"required"`
 }

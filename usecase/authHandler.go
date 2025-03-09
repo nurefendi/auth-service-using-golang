@@ -13,6 +13,7 @@ import (
 	authUserRepository "auth-service/repository/database/authuser"
 	authUserGroupRepository "auth-service/repository/database/authusergroup"
 	authRefreshTokensRepository "auth-service/repository/database/autrefreshtokens"
+	authPermissionRepository "auth-service/repository/database/authpermission"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber/v2"
@@ -124,7 +125,6 @@ func (a *authUseCase) CheckEmailExist(c *fiber.Ctx, email *string) *fiber.Error 
 	}
 	return nil
 }
-
 func (a *authUseCase) CheckUserNameExist(c *fiber.Ctx, userNames *string) *fiber.Error {
 	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
 	data, err := authUserRepository.FindByUserName(c, userNames)
@@ -145,7 +145,6 @@ func (a *authUseCase) CheckUserNameExist(c *fiber.Ctx, userNames *string) *fiber
 	}
 	return nil
 }
-
 // RefreshToken implements Auth.
 func (a *authUseCase) RefreshToken(c *fiber.Ctx) *fiber.Error {
 	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
@@ -225,7 +224,19 @@ func (a *authUseCase) Me(c *fiber.Ctx) (dto.AuthUserResponse, *fiber.Error) {
 		GroupIDs: groupIds,
 	}, nil
 }
-
+// CheckAccess implements Auth.
+func (a *authUseCase) CheckAccess(c *fiber.Ctx, r dto.AuthCheckAccessRequest) *fiber.Error {
+	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
+	log.Info(currentAccess.RequestID, " checking access : ", r.Path, " Method : ", r.Mathod)
+	can, err := authPermissionRepository.FindByGroupIdAndPathAndMethod(c, r.Path, r.Mathod)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, " Error ", err.Error())
+	}
+	if !can {
+		return fiber.NewError(fiber.StatusForbidden, " error no access")
+	}
+	return nil
+}
 
 func generateToken(c *fiber.Ctx, payloadGenerateToken dto.CurrentUserAccess) *fiber.Error {
 	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)

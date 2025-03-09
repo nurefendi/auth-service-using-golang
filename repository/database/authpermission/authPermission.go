@@ -46,7 +46,7 @@ func FindById(c *fiber.Ctx, id uuid.UUID) (*dao.AuthPermission, error) {
 	return &data, nil
 }
 
-func FindByGroupIdAndPathAndMethod(c *fiber.Ctx) (bool, error) {
+func FindByGroupIdAndPathAndMethod(c *fiber.Ctx, path, method string) (bool, error) {
 	db := database.GetDBConnection(c)
 	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
 
@@ -63,7 +63,7 @@ func FindByGroupIdAndPathAndMethod(c *fiber.Ctx) (bool, error) {
 		enums.POST.Name():   "ap.grant_create",
 	}
 
-	permissionColumn, ok := permissions[strings.ToUpper(c.Method())]
+	permissionColumn, ok := permissions[strings.ToUpper(method)]
 	if !ok {
 		return false, errors.New("unsupported HTTP method")
 	}
@@ -80,7 +80,7 @@ func FindByGroupIdAndPathAndMethod(c *fiber.Ctx) (bool, error) {
 	`
 
 	var isExist bool
-	err := db.Raw(query, c.Path(), gorm.Expr("?", currentAccess.UserAccess.UserID)).Scan(&isExist).Error
+	err := db.Raw(query, strings.ToLower(path), gorm.Expr("?", currentAccess.UserAccess.UserID)).Scan(&isExist).Error
 	if err != nil {
 		log.Error(currentAccess.RequestID, " error ", err.Error())
 		return false, err
