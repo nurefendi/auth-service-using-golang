@@ -180,10 +180,9 @@ func (a *authUseCase) RefreshToken(c *fiber.Ctx) *fiber.Error {
 }
 func (a *authUseCase) Logout(c *fiber.Ctx) *fiber.Error {
 	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
-	log.Infof("currentAccess", currentAccess)
 	log.Info(currentAccess.RequestID, " Logout. ip:", c.IP())
 	clearCookie(c)
-	c.ClearCookie("token", "refresh_token")
+	c.ClearCookie()
 	err := authRefreshTokensRepository.DeleteByUserId(c, currentAccess.UserAccess.UserID)
 	if err != nil {
 		log.Error(currentAccess.RequestID, err.Error())
@@ -202,6 +201,7 @@ func (a *authUseCase) Me(c *fiber.Ctx) (dto.AuthUserResponse, *fiber.Error) {
 	for _, v := range data.GenderLang {
 		if v.Lang == currentAccess.LanguageCode {
 			genderName = v.Name
+			break
 		}
 	}
 	userGroups, errr := authUserGroupRepository.FindByUserId(c, data.ID)
@@ -210,7 +210,7 @@ func (a *authUseCase) Me(c *fiber.Ctx) (dto.AuthUserResponse, *fiber.Error) {
 		return dto.AuthUserResponse{}, errr
 	}
 
-	groupIds := make([]uuid.UUID, len(*userGroups))
+	var groupIds []uuid.UUID 
 	for _, v := range *userGroups {
 		groupIds = append(groupIds, v.GroupID)
 	}
@@ -270,7 +270,7 @@ func generateToken(c *fiber.Ctx, payloadGenerateToken dto.CurrentUserAccess) *fi
 	err = authRefreshTokensRepository.Save(c, &dao.AuthRefreshTokens{
 		UserID: payloadGenerateToken.UserID,
 		Token: *refreshToken,
-		ExpiresAt: expirationTime,
+		ExpiresAt: refreshExpiration,
 		AuditorDAO: dao.AuditorDAO{
 			CreatedBy: payloadGenerateToken.Email,
 		},

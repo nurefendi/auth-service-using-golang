@@ -80,12 +80,11 @@ func DeleteByUserId(c *fiber.Ctx, userId uuid.UUID) error {
 
 func FindByUserIdAndToken(c *fiber.Ctx, userId uuid.UUID, token string) (*dao.AuthRefreshTokens, error) {
 	db := database.GetDBConnection(c)
-	currentAcess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
 	data := dao.AuthRefreshTokens{}
 	findRecord := db.Where("user_id = ? AND token = ? AND expires_at > CURRENT_TIMESTAMP", userId, token).
 		First(&data)
 	if findRecord.Error != nil {
-		log.Error(currentAcess.RequestID, " error ", findRecord.Error.Error())
+		log.Error(c.IP(), " error ", findRecord.Error.Error())
 		return nil, findRecord.Error
 	}
 

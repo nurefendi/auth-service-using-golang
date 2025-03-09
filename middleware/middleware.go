@@ -13,6 +13,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/log"
 	"github.com/google/uuid"
 )
 
@@ -84,11 +85,11 @@ func getChannelId(c *fiber.Ctx) string {
 }
 
 func getLanguageCode(c *fiber.Ctx) string {
-	if c.Get(fiber.HeaderContentLanguage) != "" {
-		lang := c.Get(fiber.HeaderContentLanguage)
+	if c.Get(fiber.HeaderAcceptLanguage) != "" {
+		lang := c.Get(fiber.HeaderAcceptLanguage)
 		code := strings.Split(lang, "-")[0]
 		if code == "id" || code == "in" {
-			return "in"
+			return "id"
 		}
 		return code
 	}
@@ -114,8 +115,10 @@ func getUserAccess(c *fiber.Ctx) (*dto.CurrentUserAccess, error) {
 	if tokenString != "" {
 		dataClaim, err := jwtMidleware.JwtClaims(c, tokenString)
 		if err != nil {
+			log.Error(c.IP(), " Empty token : ", err.Error())
 			if ve, ok := err.(*jwt.ValidationError); ok {
 				if ve.Errors&jwt.ValidationErrorExpired != 0 {
+					log.Error(c.IP(), " token expired ")
 					isTokenExpired = true
 				} else {
 					c.Status(fiber.StatusUnauthorized).
@@ -142,18 +145,22 @@ func getUserAccess(c *fiber.Ctx) (*dto.CurrentUserAccess, error) {
 	if isTokenExpired {
 		refreshToken := c.Cookies("refresh_token")
 		if refreshToken == "" {
+			log.Error(c.IP(), " Empty refresh token")
 			c.Status(fiber.StatusUnauthorized).
 				SendString("Invalid token")
 			return nil, errors.New("invalid token")
 		}
-		refreshClaim, err := jwtMidleware.JwtClaims(c, tokenString)
+		refreshClaim, err := jwtMidleware.JwtClaims(c, refreshToken)
 		if err != nil {
+			log.Error(c.IP(), " Error claim ", err.Error())
 			c.Status(fiber.StatusUnauthorized).
 				SendString("Invalid token")
 			return nil, errors.New("invalid token")
 		}
-		dataRefreshToken, err := authRefreshTokenRepository.FindByUserIdAndToken(c, refreshClaim["userId"].(uuid.UUID), refreshToken)
+		getuserId, _ := uuid.Parse(refreshClaim["userId"].(string))
+		dataRefreshToken, err := authRefreshTokenRepository.FindByUserIdAndToken(c, getuserId, refreshToken)
 		if err != nil {
+			log.Error(c.IP(), " error empty : ", err.Error())
 			c.Status(fiber.StatusUnauthorized).
 				SendString("Invalid token")
 			return nil, errors.New("invalid token")
@@ -167,6 +174,11 @@ func getUserAccess(c *fiber.Ctx) (*dto.CurrentUserAccess, error) {
 		expirationTime := time.Now().Add(15 * time.Minute)
 		userAccess.StandardClaims = jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
+		}
+		userAccess = dto.CurrentUserAccess{
+			UserID:   getuserId,
+			UserName: refreshClaim["userName"].(string),
+			Email:    refreshClaim["email"].(string),
 		}
 		token, _ := jwtMidleware.GenerateToken(userAccess)
 		c.Cookie(&fiber.Cookie{
