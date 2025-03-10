@@ -132,4 +132,16 @@ CREATE TABLE IF NOT EXISTS auth_refresh_tokens (
 -- default group
 INSERT INTO auth_group (id, `name`, description, created_by, created_at)
 VALUE
-('28cfc72c-fbc5-11ef-95a5-1c697a672693', "Default", "Default Group", "System", NOW())
+('28cfc72c-fbc5-11ef-95a5-1c697a672693', "Default", "Default Group", "System", NOW());
+
+-- default portal
+
+INSERT INTO auth_portal (id, `order`, path, created_at, created_by)
+VALUE
+(UUID(), 0, "/v1/portal", NOW(), "MIGRATION");
+
+INSERT INTO auth_portal_lang 
+(id, portal_id, `name`, description, lang, created_at, created_by)
+VALUE 
+(UUID(), (SELECT id FROM auth_portal WHERE path = '/v1/portal'), 'Default Portal', 'Default Portal', 'en', NOW(), "MIGRATION"),
+(UUID(), (SELECT id FROM auth_portal WHERE path = '/v1/portal'), 'Portal Utama', 'Portal utama', 'id', NOW(), "MIGRATION");

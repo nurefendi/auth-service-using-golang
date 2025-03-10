@@ -99,3 +99,14 @@ func DeletePortalById(c *fiber.Ctx) error {
 	}
 	return c.SendStatus(fiber.StatusNoContent)
 }
+func GetPortalUser(c *fiber.Ctx) error {
+	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
+
+	data, fibererr := usecase.PortalUseCase().FindPortalUser(c)
+	if fibererr != nil {
+		log.Error(currentAccess.RequestID, " ", fibererr.Message)
+		c.Status(fibererr.Code).SendString(fibererr.Message)
+		return errors.New(fibererr.Error())
+	}
+	return c.Status(fiber.StatusOK).JSON(data)
+}

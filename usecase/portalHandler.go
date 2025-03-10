@@ -136,3 +136,10 @@ func (p *portalUseCase) FindById(c *fiber.Ctx, id uuid.UUID) (*dto.PortalDto, *f
 	}
 	return &result, &fiber.Error{}
 }
+
+// FindPortalUser implements Portal.
+func (p *portalUseCase) FindPortalUser(c *fiber.Ctx) ([]dto.PortalUserDto, *fiber.Error) {
+	// currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
+	// portalRepository.FindById()
+	panic("unimplement")
+}

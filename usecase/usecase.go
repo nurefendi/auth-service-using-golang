@@ -26,5 +26,6 @@ type (
 		Update(c *fiber.Ctx, data *dto.PortalDto) *fiber.Error
 		Delete(c *fiber.Ctx, id uuid.UUID) *fiber.Error
 		FindById(c *fiber.Ctx, id uuid.UUID) (*dto.PortalDto, *fiber.Error)
+		FindPortalUser(c *fiber.Ctx) ([]dto.PortalUserDto, *fiber.Error)
 	}
 )
