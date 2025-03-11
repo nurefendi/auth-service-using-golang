@@ -99,14 +99,29 @@ func DeletePortalById(c *fiber.Ctx) error {
 	}
 	return c.SendStatus(fiber.StatusNoContent)
 }
-func GetPortalUser(c *fiber.Ctx) error {
+func GetPortal(c *fiber.Ctx) error {
 	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
+	var request dto.PortalPagination
 
-	data, fibererr := usecase.PortalUseCase().FindPortalUser(c)
+	if err := c.BodyParser(&request); err != nil {
+		log.Error(currentAccess.RequestID, " invalid bind json payload ")
+		c.Status(fiber.StatusBadRequest).
+		JSON(fiber.NewError(fiber.StatusBadRequest, " invalid bind json payload"))
+		return err
+	}
+
+	data, total, fibererr := usecase.PortalUseCase().FindAll(c, request)
 	if fibererr != nil {
 		log.Error(currentAccess.RequestID, " ", fibererr.Message)
 		c.Status(fibererr.Code).SendString(fibererr.Message)
 		return errors.New(fibererr.Error())
 	}
-	return c.Status(fiber.StatusOK).JSON(data)
+	return c.Status(fiber.StatusOK).
+	JSON(fiber.Map{
+		"data": data,
+		"limit": request.Limit,
+		"offset": request.Offset,
+		"search": request.Search,
+		"total": total,
+	})
 }

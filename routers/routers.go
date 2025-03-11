@@ -24,7 +24,7 @@ func HandleRouter(app *fiber.App) {
 	api.Get("/auth/refresh-token", middleware.SetMiddlewareAuthNoAcl(), controllers.AuthRefreshTokens)
 	api.Get("/auth/me", middleware.SetMiddlewareAuthNoAcl(), controllers.AuthMe)
 	api.Get("/auth/chek-access", middleware.SetMiddlewareAuthNoAcl(), controllers.CheckAccess)
-	api.Get("/portal", middleware.SetMiddlewareAuthNoAcl())
+	api.Get("/portal", middleware.SetMiddlewareAUTH())
 	api.Post("/portal", middleware.SetMiddlewareAUTH(), controllers.SavePortal)
 	api.Get("/portal/:id", middleware.SetMiddlewareAUTH(), controllers.GetPortalById)
 	api.Put("/portal", middleware.SetMiddlewareAUTH(), controllers.UpdatePortal)

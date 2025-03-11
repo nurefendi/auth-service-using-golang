@@ -26,3 +26,6 @@ type PortalUserDto struct {
 	PortalName  string    `json:"portalName" validate:"required,max=255"`
 	Description string    `json:"description" validate:"required"`
 }
+type PortalPagination struct {
+	PaginationParam
+}

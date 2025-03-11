@@ -82,3 +82,26 @@ func FindById(c *fiber.Ctx, portalID uuid.UUID) (dao.AuthPortal, *fiber.Error) {
 	return result, &fiber.Error{}
 
 }
+func FindAll(c *fiber.Ctx, r dto.PortalPagination) ([]dao.AuthPortal, int64, *fiber.Error)  {
+	db := database.GetDBConnection(c)
+	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
+	var authPortals []dao.AuthPortal
+	var total int64
+	query := db.Model(&dao.AuthPortal{})
+
+	if r.Search != "" {
+		searchPattern := "%" + r.Search + "%"
+		query = query.Where("path LIKE ? OR icon LIKE ?", searchPattern, searchPattern)
+	}
+	
+	query.Count(&total)
+	offset := (r.Offset - 1) * r.Limit
+
+	result := query.Preload("Lang").Order("order ASC").Limit(r.Limit).Offset(offset).Find(&authPortals)
+	if result.Error != nil {
+		log.Error(currentAccess.RequestID, " error ", result.Error.Error())
+		return nil, 0, fiber.NewError(fiber.StatusInternalServerError, result.Error.Error())
+	}
+
+	return  authPortals, total, nil
+}
