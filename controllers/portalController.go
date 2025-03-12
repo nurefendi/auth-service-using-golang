@@ -36,7 +36,6 @@ func SavePortal(c *fiber.Ctx) error {
 	}
 	return c.SendStatus(fiber.StatusCreated)
 }
-
 func UpdatePortal(c *fiber.Ctx) error {
 	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
 	var request dto.PortalDto
@@ -61,7 +60,6 @@ func UpdatePortal(c *fiber.Ctx) error {
 	}
 	return c.SendStatus(fiber.StatusAccepted)
 }
-
 func GetPortalById(c *fiber.Ctx) error {
 	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
 

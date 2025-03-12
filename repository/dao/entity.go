@@ -83,6 +83,7 @@ type AuthFunction struct {
 	FontIcon    *string            `gorm:"type:varchar(50)"`
 	IsShow      bool               `gorm:"type:tinyint(1);not null;default:true"`
 	ShortcutKey *string            `gorm:"type:varchar(100)"`
+	Order       int                `gorm:"type:int(3);not null"`
 	Path        string             `gorm:"type:varchar(255);not null"`
 	Lang        []AuthFunctionLang `gorm:"foreignKey:FunctionID;constraint:OnDelete:CASCADE"`
 	AuditorDAO

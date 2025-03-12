@@ -83,6 +83,8 @@ CREATE TABLE IF NOT EXISTS auth_function (
     is_show TINYINT(1) NOT NULL DEFAULT 1,
     shortcut_key VARCHAR(100) null,
     path VARCHAR(255) NOT null,
+    `path_param` JSON NULL DEFAULT NULL,
+    `order` INT(3) NOT NULL,
     created_at DATETIME not NULL DEFAULT UNIX_TIMESTAMP(),
     created_by VARCHAR(255) NOT NULL,
     modified_at DATETIME NULL,

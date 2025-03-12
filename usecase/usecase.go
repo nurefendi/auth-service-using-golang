@@ -8,8 +8,9 @@ import (
 )
 
 type (
-	authUseCase   struct{}
-	portalUseCase struct{}
+	authUseCase     struct{}
+	portalUseCase   struct{}
+	functionUseCase struct{}
 
 	Auth interface {
 		Register(c *fiber.Ctx) *fiber.Error
@@ -27,5 +28,12 @@ type (
 		Delete(c *fiber.Ctx, id uuid.UUID) *fiber.Error
 		FindById(c *fiber.Ctx, id uuid.UUID) (*dto.PortalDto, *fiber.Error)
 		FindAll(c *fiber.Ctx, r dto.PortalPagination) ([]dto.PortalUserDto, int64, *fiber.Error)
+	}
+	Function interface {
+		Save(c *fiber.Ctx, data *dto.FunctionDto) *fiber.Error
+		Update(c *fiber.Ctx, data *dto.FunctionDto) *fiber.Error
+		Delete(c *fiber.Ctx, id uuid.UUID) *fiber.Error
+		FindById(c *fiber.Ctx, id uuid.UUID) (*dto.PortalDto, *fiber.Error)
+		FindAll(c *fiber.Ctx, r dto.FunctionPagination) ([]dto.PortalUserDto, int64, *fiber.Error)
 	}
 )
