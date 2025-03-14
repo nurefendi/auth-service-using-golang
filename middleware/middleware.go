@@ -97,7 +97,7 @@ func getLanguageCode(c *fiber.Ctx) string {
 }
 
 func getAuthorizationFunction(c *fiber.Ctx) error {
-	can, err := authPermissionRepository.FindByGroupIdAndPathAndMethod(c, c.Path(), c.Method())
+	can, err := authPermissionRepository.FindByGroupIdAndPathAndMethod(c, c.Route().Path, c.Method())
 	if err != nil {
 		return err
 	}
