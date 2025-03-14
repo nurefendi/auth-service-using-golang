@@ -2,8 +2,11 @@ package usecase
 
 import (
 	"auth-service/dto"
+	functionRepository "auth-service/repository/database/authfunction"
+	"auth-service/tools/locals"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/log"
 	"github.com/google/uuid"
 )
 
@@ -13,7 +16,13 @@ func FunctionUSeCase() Function {
 
 // Delete implements Function.
 func (f *functionUseCase) Delete(c *fiber.Ctx, id uuid.UUID) *fiber.Error {
-	panic("unimplemented")
+	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
+	_, errf := functionRepository.FindById(c, id)
+	if errf != nil {
+		log.Error(currentAccess.RequestID, errf.Message)
+		return errf
+	}
+	return functionRepository.Delete(c, id)
 }
 
 // FindAll implements Function.

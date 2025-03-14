@@ -28,7 +28,7 @@ func Save(c *fiber.Ctx, data *dao.AuthFunction) error {
 	return nil
 }
 
-func FindById(c *fiber.Ctx, id uuid.UUID) (*dao.AuthFunction, error) {
+func FindById(c *fiber.Ctx, id uuid.UUID) (*dao.AuthFunction, *fiber.Error) {
 	db := database.GetDBConnection(c)
 	currentAcess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
 	data := dao.AuthFunction{}
@@ -37,8 +37,32 @@ func FindById(c *fiber.Ctx, id uuid.UUID) (*dao.AuthFunction, error) {
 		First(&data)
 	if findRecord.Error != nil {
 		log.Error(currentAcess.RequestID, " error ", findRecord.Error.Error())
-		return nil, findRecord.Error
+		return nil, fiber.NewError(fiber.StatusInternalServerError, findRecord.Error.Error())
 	}
 
 	return &data, nil
+}
+func Delete(c *fiber.Ctx, portalID uuid.UUID) *fiber.Error {
+	db := database.GetDBConnection(c)
+	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
+
+	if db == nil {
+		log.Error(currentAccess.RequestID, " error cannot find db connection")
+		return &fiber.Error{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Unable to connect to database",
+		}
+	}
+
+	deleteRecord := db.Delete(&dao.AuthFunction{}, "id = ?", portalID)
+	if deleteRecord.Error != nil {
+		log.Error(currentAccess.RequestID, " error ", deleteRecord.Error.Error())
+		return &fiber.Error{
+			Code:    fiber.StatusUnprocessableEntity,
+			Message: deleteRecord.Error.Error(),
+		}
+	}
+
+	log.Info(currentAccess.RequestID, " Deleted portal from DB, Affected rows: ", deleteRecord.RowsAffected)
+	return nil
 }
