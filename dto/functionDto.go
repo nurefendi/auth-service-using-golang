@@ -10,6 +10,7 @@ type FunctionDto struct {
 	ID          *uuid.UUID        `json:"id"`
 	PortalID    uuid.UUID         `json:"portalId" validate:"required"`
 	Method      enums.HttpMethod  `json:"method" validate:"required"`
+	ParentID    *uuid.UUID        `json:"parentId" validate:"omitempty"`
 	Order       int               `json:"order" validate:"required"`
 	Position    string            `json:"position" validate:"required"`
 	Path        string            `json:"path" validate:"required"`

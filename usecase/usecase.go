@@ -33,7 +33,7 @@ type (
 		Save(c *fiber.Ctx, data *dto.FunctionDto) *fiber.Error
 		Update(c *fiber.Ctx, data *dto.FunctionDto) *fiber.Error
 		Delete(c *fiber.Ctx, id uuid.UUID) *fiber.Error
-		FindById(c *fiber.Ctx, id uuid.UUID) (*dto.PortalDto, *fiber.Error)
-		FindAll(c *fiber.Ctx, r dto.FunctionPagination) ([]dto.PortalUserDto, int64, *fiber.Error)
+		FindById(c *fiber.Ctx, id uuid.UUID) (*dto.FunctionDto, *fiber.Error)
+		FindAll(c *fiber.Ctx, r dto.FunctionPagination) ([]dto.FunctionUserDto, int64, *fiber.Error)
 	}
 )
