@@ -12,6 +12,7 @@ type (
 	portalUseCase   struct{}
 	functionUseCase struct{}
 	userUseCase     struct{}
+	groupUseCase    struct{}
 
 	Auth interface {
 		Register(c *fiber.Ctx) *fiber.Error
@@ -43,5 +44,12 @@ type (
 		Delete(c *fiber.Ctx, id uuid.UUID) *fiber.Error
 		FindById(c *fiber.Ctx, id uuid.UUID) (*dto.UserDto, *fiber.Error)
 		FindAll(c *fiber.Ctx, r dto.UserPagination) ([]dto.UserDto, int64, *fiber.Error)
+	}
+	Group interface {
+		Save(c *fiber.Ctx, data *dto.GroupDto) *fiber.Error
+		Update(c *fiber.Ctx, data *dto.GroupDto) *fiber.Error
+		Delete(c *fiber.Ctx, id uuid.UUID) *fiber.Error
+		FindById(c *fiber.Ctx, id uuid.UUID) (*dto.GroupDto, *fiber.Error)
+		FindAll(c *fiber.Ctx, r dto.GroupPagination) ([]dto.GroupDto, int64, *fiber.Error)
 	}
 )

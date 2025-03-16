@@ -29,7 +29,7 @@ func SetMiddlewareJSON() fiber.Handler {
 	}
 }
 
-func SetMiddlewareAUTH() fiber.Handler {
+func SetMiddlewareAUTH(withacl bool) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		userAccess, err := getUserAccess(c)
 		if err != nil {
@@ -43,28 +43,12 @@ func SetMiddlewareAUTH() fiber.Handler {
 			ChannelID:    getChannelId(c),
 			UserAccess:   userAccess,
 		})
-		if err := getAuthorizationFunction(c); err != nil {
-			return c.Status(fiber.StatusUnauthorized).
-				SendString("unauthorized access")
+		if withacl {
+			if err := getAuthorizationFunction(c); err != nil {
+				return c.Status(fiber.StatusUnauthorized).
+					SendString("unauthorized access")
+			}
 		}
-		return c.Next()
-	}
-}
-
-func SetMiddlewareAuthNoAcl() fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		userAccess, err := getUserAccess(c)
-		if err != nil {
-			c.Status(fiber.StatusUnauthorized).
-				SendString("Invalid token")
-			return nil
-		}
-		locals.SetLocals(c, dto.UserLocals{
-			RequestID:    getRequestId(c),
-			LanguageCode: getLanguageCode(c),
-			ChannelID:    getChannelId(c),
-			UserAccess:   userAccess,
-		})
 		return c.Next()
 	}
 }
