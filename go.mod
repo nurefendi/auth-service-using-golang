@@ -1,6 +1,6 @@
 module auth-service
 
-go 1.23.4
+go 1.23
 
 require gorm.io/driver/mysql v1.5.7
 

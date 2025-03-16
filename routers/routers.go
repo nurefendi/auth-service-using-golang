@@ -34,6 +34,7 @@ func HandleRouter(app *fiber.App) {
 	api.Post("/function", middleware.SetMiddlewareAUTH(), controllers.SaveFunction)
 	api.Put("/function", middleware.SetMiddlewareAUTH(), controllers.UpdateFunction)
 	api.Delete("/function/:id", middleware.SetMiddlewareAUTH(), controllers.DeleteFunctionById)
+	
 	api.Get("/user/:id", middleware.SetMiddlewareAUTH(), controllers.DeleteFunctionById)
 	api.Get("/user", middleware.SetMiddlewareAUTH(), controllers.DeleteFunctionById)
 	api.Post("/user", middleware.SetMiddlewareAUTH(), controllers.DeleteFunctionById)
