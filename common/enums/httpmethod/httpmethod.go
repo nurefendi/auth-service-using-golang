@@ -1,45 +1,43 @@
 package enums
 
-import "github.com/gofiber/fiber/v2"
-
 type HttpMethod string
 
 const (
-	GET    HttpMethod = fiber.MethodGet
-	PUT    HttpMethod = fiber.MethodPut
-	DELETE HttpMethod = fiber.MethodDelete
-	POST   HttpMethod = fiber.MethodPost
-	PATCH  HttpMethod = fiber.MethodPatch
+	GET    HttpMethod = "GET"
+	PUT    HttpMethod = "PUT"
+	DELETE HttpMethod = "DELETE"
+	POST   HttpMethod = "POST"
+	PATCH  HttpMethod = "PATCH"
 )
 
 func (c HttpMethod) Name() string {
 	switch c {
 	case POST:
-		return fiber.MethodPost
+		return "POST"
 	case PUT:
-		return fiber.MethodPut
+		return "PUT"
 	case DELETE:
-		return fiber.MethodDelete
+		return "DELETE"
 	case PATCH:
-		return fiber.MethodPatch
+		return "PATCH"
 	case GET:
 	default:
-		return fiber.MethodGet
+		return "GET"
 	}
-	return fiber.MethodGet
+	return "GET"
 }
 
 func GetValue(val string) HttpMethod {
 	switch val {
-	case fiber.MethodDelete:
+	case "DELETE":
 		return DELETE
-	case fiber.MethodPatch:
+	case "PATCH":
 		return PATCH
-	case fiber.MethodPost:
+	case "POST":
 		return POST
-	case fiber.MethodPut:
+	case "PUT":
 		return PUT
-	case fiber.MethodGet:
+	case "GET":
 	default:
 		return GET
 	}
