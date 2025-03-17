@@ -122,7 +122,7 @@ func (f *functionUseCase) Update(c *fiber.Ctx, data *dto.FunctionDto) *fiber.Err
 	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
 	if data.ID == nil {
 		log.Error(currentAccess.RequestID, " ID must not nul")
-		return fiber.NewError(fiber.StatusBadRequest, "Portal id required")
+		return fiber.NewError(fiber.StatusBadRequest, "id is required")
 	}
 	datadb, errf := functionRepository.FindById(c, *data.ID)
 	if errf != nil {
