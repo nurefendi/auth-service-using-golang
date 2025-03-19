@@ -1,7 +1,7 @@
 CREATE DATABASE IF NOT EXISTS `auth-service`;
 USE `auth-service`;
 CREATE TABLE IF NOT EXISTS gender_lang (
-    id UUID PRIMARY KEY NOT null,
+    BINARY(36) PRIMARY KEY NOT NULL DEFAULT (UUID()),
     gender TINYINT(1) NOT NULL,
     lang VARCHAR(20) NOT NULL,
     `name` VARCHAR(100) NOT NULL,
@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS gender_lang (
     modified_by VARCHAR(255) NULL
 );
 CREATE TABLE IF NOT EXISTS auth_user (
-    id UUID PRIMARY KEY NOT null,
+    BINARY(36) PRIMARY KEY NOT NULL DEFAULT (UUID()),
     full_name VARCHAR(255) NOT null,
     email VARCHAR(100) NOT null,
     username VARCHAR(100) not null,
@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS auth_user (
 );
 
 CREATE TABLE IF NOT EXISTS auth_group (
-    id UUID PRIMARY KEY NOT null,
+    BINARY(36) PRIMARY KEY NOT NULL DEFAULT (UUID()),
     `name` VARCHAR(255) NOT NULL,
     description TEXT,
     created_at DATETIME not NULL DEFAULT UNIX_TIMESTAMP(),
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS auth_group (
 );
 
 CREATE TABLE IF NOT EXISTS auth_user_group (
-    id UUID PRIMARY KEY NOT null,
+    BINARY(36) PRIMARY KEY NOT NULL DEFAULT (UUID()),
     user_id UUID NOT null,
     group_id UUID NOT null,
     created_at DATETIME not NULL DEFAULT UNIX_TIMESTAMP(),
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS auth_user_group (
 
 
 CREATE TABLE IF NOT EXISTS auth_portal (
-    id UUID PRIMARY KEY NOT null,
+    BINARY(36) PRIMARY KEY NOT NULL DEFAULT (UUID()),
     `order` INT(3) NOT NULL,
     path VARCHAR(255) NOT NULL,
     icon VARCHAR(255) null,
@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS auth_portal (
     modified_by VARCHAR(255) NULL
 );
 CREATE TABLE IF NOT EXISTS auth_portal_lang (
-    id UUID PRIMARY KEY NOT null,
+    BINARY(36) PRIMARY KEY NOT NULL DEFAULT (UUID()),
     portal_id UUID NOT null,
     `name` VARCHAR(255) NOT null,
     description TEXT null,
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS auth_portal_lang (
     FOREIGN KEY (portal_id) REFERENCES auth_portal(id) ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS auth_function (
-    id UUID PRIMARY KEY NOT null,
+    BINARY(36) PRIMARY KEY NOT NULL DEFAULT (UUID()),
     portal_id UUID NOT null,
     parent_id UUID null,
     method ENUM("GET", "POST", "PUT", "DELETE", "PATCH") NOT NULL DEFAULT "GET",
@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS auth_function (
 );
 
 CREATE TABLE IF NOT EXISTS auth_function_lang (
-    id UUID PRIMARY KEY NOT null,
+    BINARY(36) PRIMARY KEY NOT NULL DEFAULT (UUID()),
     function_id UUID NOT null,
     `name` VARCHAR(255) NOT null,
     lang VARCHAR(20) NOT null,
@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS auth_function_lang (
 );
 
 CREATE TABLE IF NOT EXISTS auth_permission (
-    id UUID PRIMARY KEY NOT null,
+    BINARY(36) PRIMARY KEY NOT NULL DEFAULT (UUID()),
     group_id UUID NOT null,
     function_id UUID NOT null,
     grand_create TINYINT(1) NOT NULL DEFAULT 0,
@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS auth_permission (
     FOREIGN KEY (function_id) REFERENCES auth_function(id) ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS auth_refresh_tokens (
-    id UUID PRIMARY KEY DEFAULT (uuid()),
+    BINARY(36) PRIMARY KEY NOT NULL DEFAULT (UUID()),
     user_id UUID NOT NULL,
     token TEXT NOT NULL UNIQUE,
     expires_at TIMESTAMP NOT NULL,
