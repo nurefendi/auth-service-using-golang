@@ -27,12 +27,50 @@ func (u *userUseCase) Delete(c *fiber.Ctx, id uuid.UUID) *fiber.Error {
 
 // FindAll implements User.
 func (u *userUseCase) FindAll(c *fiber.Ctx, r dto.UserPagination) ([]dto.UserDto, int64, *fiber.Error) {
-	panic("unimplemented")
+	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
+	data, total, errf := userRepository.FindAll(c, r)
+	if errf != nil {
+		log.Error(currentAccess.RequestID, errf.Message)
+		return nil,0, errf
+	}
+	var result []dto.UserDto
+	for _, v := range data {
+		result = append(result, dto.UserDto{
+			ID: &v.ID,
+			Gender: v.Gender,
+			FullName: v.FullName,
+			Email: v.Email,
+			Username: v.Username,
+			Telephone: v.Telephone,
+			Picture: v.Picture,
+		})
+	}
+	return result, total, nil
 }
 
 // FindById implements User.
 func (u *userUseCase) FindById(c *fiber.Ctx, id uuid.UUID) (*dto.UserDto, *fiber.Error) {
-	panic("unimplemented")
+	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
+	data, errf := userRepository.FindById(c, id)
+	if errf != nil {
+		log.Error(currentAccess.RequestID, errf.Message)
+		return nil, errf
+	}
+	var groupIds []uuid.UUID
+	for _, v := range data.Goups {
+		groupIds = append(groupIds, v.ID)
+	}
+	return &dto.UserDto{
+		ID: &data.ID,
+		Gender: data.Gender,
+		FullName: data.FullName,
+		Email: data.Email,
+		Username: data.Username,
+		Telephone: data.Telephone,
+		Picture: data.Picture,
+		GroupIDs: groupIds,
+
+	}, &fiber.Error{}
 }
 
 // Save implements User.

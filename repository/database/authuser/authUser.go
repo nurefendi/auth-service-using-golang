@@ -72,7 +72,7 @@ func FindById(c *fiber.Ctx, id uuid.UUID) (dao.AuthUser, *fiber.Error) {
 	var data dao.AuthUser
 	err := db.Model(&dao.AuthUser{}).
 		Where("id = ?", id).
-		Preload("GenderLang").
+		Preload("Goups").
 		Find(&data).Error
 	if err != nil {
 		log.Error(currentAcess.RequestID, err.Error())
@@ -132,4 +132,27 @@ func Delete(c *fiber.Ctx, id uuid.UUID) *fiber.Error {
 
 	log.Info(currentAccess.RequestID, " Deleted portal from DB, Affected rows: ", deleteRecord.RowsAffected)
 	return nil
+}
+func FindAll(c *fiber.Ctx, r dto.UserPagination) ([]dao.AuthUser, int64, *fiber.Error)  {
+	db := database.GetDBConnection(c)
+	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
+	var resultDao []dao.AuthUser
+	var total int64
+	query := db.Model(&dao.AuthUser{})
+
+	if r.Search != "" {
+		searchPattern := "%" + r.Search + "%"
+		query = query.Where("full_name LIKE ? OR email LIKE ?", searchPattern, searchPattern)
+	}
+	
+	query.Count(&total)
+	offset := (r.Offset - 1) * r.Limit
+
+	result := query.Preload("Goups").Order("created_at DESC").Limit(r.Limit).Offset(offset).Find(&resultDao)
+	if result.Error != nil {
+		log.Error(currentAccess.RequestID, " error ", result.Error.Error())
+		return nil, 0, fiber.NewError(fiber.StatusInternalServerError, result.Error.Error())
+	}
+
+	return  resultDao, total, nil
 }
