@@ -102,10 +102,10 @@ type AuthFunctionLang struct {
 type AuthPermission struct {
 	GroupID     uuid.UUID    `gorm:"type:uuid;not null"`
 	FunctionID  uuid.UUID    `gorm:"type:uuid;not null"`
-	GrandCreate int          `gorm:"type:tinyint(1);not null;default:0"`
-	GrandRead   int          `gorm:"type:tinyint(1);not null;default:0"`
-	GrandUpdate int          `gorm:"type:tinyint(1);not null;default:0"`
-	GrandDelete int          `gorm:"type:tinyint(1);not null;default:0"`
+	GrantCreate int          `gorm:"type:tinyint(1);not null;default:0"`
+	GrantRead   int          `gorm:"type:tinyint(1);not null;default:0"`
+	GrantUpdate int          `gorm:"type:tinyint(1);not null;default:0"`
+	GrantDelete int          `gorm:"type:tinyint(1);not null;default:0"`
 	Function    AuthFunction `gorm:"foreignKey:FunctionID;references:ID;constraint:OnDelete:CASCADE"`
 	AuditorDAO
 }
