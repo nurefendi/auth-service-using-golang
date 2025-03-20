@@ -8,7 +8,7 @@ import (
 )
 
 type AuditorDAO struct {
-	ID         uuid.UUID  `gorm:"primaryKey;type:uuid;default:(uuid())"`
+	ID         uuid.UUID  `gorm:"type:uuid;primary_key;default:(UUID())"`
 	CreatedBy  string     `gorm:"'created_by'"`
 	CreatedAt  time.Time  `gorm:"autoCreateTime:true'created_at'"`
 	ModifiedBy *string    `gorm:"'modified_by'"`
