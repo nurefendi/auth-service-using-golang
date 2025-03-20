@@ -2,7 +2,9 @@ package usecase
 
 import (
 	"auth-service/dto"
+	"auth-service/repository/dao"
 	userRepository "auth-service/repository/database/authuser"
+	"auth-service/tools/helper"
 	"auth-service/tools/locals"
 
 	"github.com/gofiber/fiber/v2"
@@ -75,7 +77,56 @@ func (u *userUseCase) FindById(c *fiber.Ctx, id uuid.UUID) (*dto.UserDto, *fiber
 
 // Save implements User.
 func (u *userUseCase) Save(c *fiber.Ctx, data *dto.UserDto) *fiber.Error {
-	panic("unimplemented")
+	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
+	log.Info(currentAccess.RequestID, " add user ", data.Email)
+
+	password, err := helper.HashBcript(data.Password)
+	if err != nil {
+		log.Error(currentAccess.RequestID, " Invalid hash password")
+		return &fiber.Error{
+			Code: fiber.StatusInternalServerError,
+			Message: "Invalid hash password",
+		}
+	}
+	existUser, fibererr := userRepository.FindByEmail(c, &data.Email)
+	if fibererr != nil || existUser.ID != uuid.Nil{
+		return &fiber.Error{
+			Code: fibererr.Code,
+			Message: fibererr.Error(),
+		}
+	}
+
+	var groups []dao.AuthUserGroup
+	for _, v := range data.GroupIDs {
+		groups = append(groups, dao.AuthUserGroup{
+			GroupID: v,
+			AuditorDAO: dao.AuditorDAO{
+				CreatedBy: currentAccess.UserAccess.Email,
+				ID: uuid.New(),
+			},
+		})
+	}
+	dataUser := dao.AuthUser{
+		FullName: data.FullName,
+		Email: data.Email,
+		Password: password,
+		Gender: data.Gender,
+		HasDeleted: false,
+		Username: data.Username,
+		Picture: data.Picture,
+		Goups: groups,
+		Telephone: data.Telephone,
+		AuditorDAO: dao.AuditorDAO{
+			ID: uuid.New(),
+			CreatedBy: currentAccess.UserAccess.Email,
+		},
+	}
+	c.Locals(locals.Entity, dataUser)
+	fibererr = userRepository.Save(c)
+	if fibererr != nil {
+		return fibererr
+	}
+	return nil
 }
 
 // Update implements User.
