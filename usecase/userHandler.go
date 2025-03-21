@@ -6,6 +6,7 @@ import (
 	userRepository "auth-service/repository/database/authuser"
 	"auth-service/tools/helper"
 	"auth-service/tools/locals"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
@@ -130,6 +131,24 @@ func (u *userUseCase) Save(c *fiber.Ctx, data *dto.UserDto) *fiber.Error {
 }
 
 // Update implements User.
-func (u *userUseCase) Update(c *fiber.Ctx, data *dto.UserDto) *fiber.Error {
-	panic("unimplemented")
+func (u *userUseCase) Update(c *fiber.Ctx, r *dto.UserDto) *fiber.Error {
+	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
+	if r.ID == &uuid.Nil {
+		return fiber.NewError(fiber.StatusBadRequest, "id is required")
+	}
+	user, errr := userRepository.FindById(c, *r.ID)
+	if errr != nil {
+		return errr
+	}
+	curtime := time.Now()
+	user.FullName = r.FullName
+	user.ModifiedAt = &curtime
+	user.ModifiedBy = &currentAccess.UserAccess.Email
+	user.Email = r.Email
+	user.Gender = r.Gender
+	user.Picture = r.Picture
+	user.Telephone = r.Telephone
+	c.Locals(locals.Entity, user)
+	return userRepository.Save(c)
+
 }
