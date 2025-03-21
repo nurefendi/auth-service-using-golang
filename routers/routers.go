@@ -31,7 +31,7 @@ func HandleRouter(app *fiber.App) {
 	api.Put("/portal", middleware.SetMiddlewareAUTH(true), controllers.UpdatePortal)
 	api.Delete("/portal/:id", middleware.SetMiddlewareAUTH(true), controllers.DeletePortalById)
 
-	api.Get("/function", middleware.SetMiddlewareAUTH(false), controllers.GetFunction)
+	api.Get("/function", middleware.SetMiddlewareAUTH(true), controllers.GetFunction)
 	api.Get("/function/:id", middleware.SetMiddlewareAUTH(true), controllers.GetFunctionById)
 	api.Post("/function", middleware.SetMiddlewareAUTH(true), controllers.SaveFunction)
 	api.Put("/function", middleware.SetMiddlewareAUTH(true), controllers.UpdateFunction)
@@ -49,6 +49,6 @@ func HandleRouter(app *fiber.App) {
 	api.Put("/group", middleware.SetMiddlewareAUTH(true), controllers.UpdateGroup)
 	api.Delete("/group/:id", middleware.SetMiddlewareAUTH(true), controllers.DeleteGroupById)
 	
-	api.Get("/acl", middleware.SetMiddlewareAUTH(true), controllers.DeleteFunctionById)
-	api.Post("/acl", middleware.SetMiddlewareAUTH(true), controllers.DeleteFunctionById)
+	api.Get("/acl", middleware.SetMiddlewareAUTH(false), controllers.DeleteFunctionById)
+
 }
