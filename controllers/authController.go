@@ -116,3 +116,16 @@ func CheckAccess( c *fiber.Ctx) error {
 	}
 	return c.SendStatus(fiber.StatusAccepted)
 }
+func GetMyAcl(c *fiber.Ctx) error {
+	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
+	fibererr := usecase.AuthUSeCase().MyAcl(c)
+	if fibererr != nil {
+		log.Error(currentAccess.RequestID, fibererr.Message)
+		c.Status(fibererr.Code).SendString(fibererr.Message)
+		return nil
+	}
+	return c.Status(fiber.StatusOK).
+		JSON(fiber.Map{
+			"data":   nil,
+		})
+}

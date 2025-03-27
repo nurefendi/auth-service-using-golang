@@ -49,6 +49,6 @@ func HandleRouter(app *fiber.App) {
 	api.Put("/group", middleware.SetMiddlewareAUTH(true), controllers.UpdateGroup)
 	api.Delete("/group/:id", middleware.SetMiddlewareAUTH(true), controllers.DeleteGroupById)
 	
-	api.Get("/acl", middleware.SetMiddlewareAUTH(false), controllers.DeleteFunctionById)
+	api.Get("/acl", middleware.SetMiddlewareAUTH(false), controllers.GetMyAcl)
 
 }

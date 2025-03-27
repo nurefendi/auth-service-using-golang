@@ -237,7 +237,13 @@ func (a *authUseCase) CheckAccess(c *fiber.Ctx, r dto.AuthCheckAccessRequest) *f
 	}
 	return nil
 }
+// MyAcl implements Auth.
+func (a *authUseCase) MyAcl(c *fiber.Ctx) *fiber.Error {
+	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
+	log.Info(currentAccess.RequestID, " getting acl")
 
+	return nil
+}
 func generateToken(c *fiber.Ctx, payloadGenerateToken dto.CurrentUserAccess) *fiber.Error {
 	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
 	expirationTime := time.Now().Add(15 * time.Minute)
