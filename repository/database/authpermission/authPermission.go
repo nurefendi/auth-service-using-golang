@@ -88,3 +88,18 @@ func FindByGroupIdAndPathAndMethod(c *fiber.Ctx, path, method string) (bool, err
 
 	return isExist, nil
 }
+
+func FindByGroupIds(c *fiber.Ctx, groupIds []uuid.UUID) (*[]dao.AuthPermission, error) {
+	db := database.GetDBConnection(c)
+	currentAcess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
+	var result []dao.AuthPermission
+	err := db.Model(dao.AuthPermission{}).
+		Where("group_id in (?)", groupIds).
+		Preload("Function").
+		Find(&result).Error
+	if err != nil {
+		log.Info(currentAcess.RequestID, err.Error())
+		return nil, fiber.NewError(fiber.StatusBadRequest, "permission not found")
+	}
+	return &result, nil
+}

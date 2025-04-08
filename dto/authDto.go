@@ -45,3 +45,15 @@ type AuthCheckAccessRequest struct {
 	Path   string `json:"path" validate:"required"`
 	Mathod string `json:"method" validate:"required"`
 }
+type AuthUserFunction struct {
+	GroupID      uuid.UUID `json:"groupId"`
+	GroupName    string    `json:"groupName"`
+	PortalID     uuid.UUID `json:"portalId"`
+	PortalName   string    `json:"portalName"`
+	FunctionID   uuid.UUID `json:"functionId"`
+	FunctionName string    `json:"functionName"`
+	GrantCreate  int       `json:"grantCreate"`
+	GrantRead    int       `json:"grantRead"`
+	GrantUpdate  int       `json:"grantUpdate"`
+	GrantDelete  int       `json:"grantDelete"`
+}

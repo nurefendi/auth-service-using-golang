@@ -241,6 +241,18 @@ func (a *authUseCase) CheckAccess(c *fiber.Ctx, r dto.AuthCheckAccessRequest) *f
 func (a *authUseCase) MyAcl(c *fiber.Ctx) *fiber.Error {
 	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
 	log.Info(currentAccess.RequestID, " getting acl")
+	groups, errr := authUserGroupRepository.FindByUserId(c, currentAccess.UserAccess.UserID)
+	if errr != nil {
+		return errr
+	}
+	var groupIds []uuid.UUID
+	for _, v := range *groups {
+		groupIds = append(groupIds, v.GroupID)
+	}
+	_, err := authPermissionRepository.FindByGroupIds(c, groupIds)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, " Error ", err.Error())
+	}
 
 	return nil
 }
