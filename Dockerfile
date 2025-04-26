@@ -23,4 +23,4 @@ COPY --from=builder /app/app .
 EXPOSE 3000
 
 # Jalankan binary
-CMD ["sh", "-c", "./app"]
+CMD ["./app"]
