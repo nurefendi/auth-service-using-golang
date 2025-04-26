@@ -46,6 +46,8 @@ func main() {
 	}
 
 	log.Print("Routed to port " + port, " ", fiber.IsChild())
-	log.Fatal(app.Listen(":" + port))
+	if err := app.Listen(":" + port); err != nil {
+		log.Fatalf("[FATAL] Failed to start server: %v", err)
+	}
 	defer database.CloseDBConnection()
 }

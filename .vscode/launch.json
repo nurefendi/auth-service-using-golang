@@ -12,7 +12,7 @@
             "program": "${workspaceRoot}",
             "env": {
                 "PORT": "9000",
-                "APP_ENV": "local",
+                "APP_ENV": "production",
                 "DB_HOST": "192.168.1.2",
                 "DB_USERNAME":"root",
                 "DB_PASSWORD": "rahasiadong",
