@@ -1,0 +1,18 @@
+services:
+  auth-service:
+    container_name: auth-service
+    build: .
+    ports:
+      - "9100:9100"   
+    restart: always
+    environment:
+      - APP_ENV=production
+      - PORT=9100     
+    volumes:
+      - .:/app
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
