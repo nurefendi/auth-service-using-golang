@@ -8,6 +8,9 @@ RUN go mod download
 
 COPY . .
 
+COPY .production.env .
+COPY .local.env .
+
 # IMPORTANT! Disable CGO supaya portable
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o app
 
