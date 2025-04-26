@@ -8,9 +8,6 @@ RUN go mod download
 
 COPY . .
 
-COPY .production.env .
-COPY .local.env .
-
 # IMPORTANT! Disable CGO supaya portable
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o app
 
@@ -21,6 +18,8 @@ WORKDIR /app
 
 # Copy binary dari builder
 COPY --from=builder /app/app .
+COPY .production.env .production.env
+COPY .local.env .local.env
 
 # Expose port
 EXPOSE 3000
