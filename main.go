@@ -16,7 +16,7 @@ import (
 func main() {
 	config.Init()
 	app := fiber.New(fiber.Config{
-		Prefork:     true,
+		Prefork:     false,
 	})
 
 	if !app.Config().Prefork {
