@@ -3,13 +3,15 @@ services:
     container_name: auth-service
     build: .
     ports:
-      - "9100:9100"   
+      - "${PORT}:9100"   
     restart: always
     environment:
-      - APP_ENV=production
-      - PORT=9100     
+      - APP_ENV=${APP_ENV}
+      - PORT=${PORT}     
     networks:
       - app-network
+    env_file:
+      - .${APP_ENV}.env
 
 networks:
   app-network:
