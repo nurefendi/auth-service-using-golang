@@ -34,9 +34,10 @@ func main() {
 		LivenessEndpoint: "/",
 	}))
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "*",
-		AllowHeaders: "*",
+		AllowOrigins: "http://localhost:8001",
+		AllowHeaders:  "Origin, Content-Type, Accept, Authorization",
 		AllowMethods:"GET,POST,OPTIONS,PUT,DELETE,PATCH",
+		AllowCredentials: true,
 	}))
 	routers.HandleRouter(app)
 

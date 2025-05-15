@@ -285,7 +285,7 @@ func generateToken(c *fiber.Ctx, payloadGenerateToken dto.CurrentUserAccess) *fi
 		Expires:  expirationTime,
 		Secure:   true,
 		HTTPOnly: true,
-		SameSite: "Strict",
+		SameSite: "none",
 	})
 	c.Cookie(&fiber.Cookie{
 		Name:     "refresh_token",
@@ -293,7 +293,7 @@ func generateToken(c *fiber.Ctx, payloadGenerateToken dto.CurrentUserAccess) *fi
 		Expires:  refreshExpiration,
 		Secure:   true,
 		HTTPOnly: true,
-		SameSite: "Strict",
+		SameSite: "none",
 	})
 
 	err = authRefreshTokensRepository.Save(c, &dao.AuthRefreshTokens{
