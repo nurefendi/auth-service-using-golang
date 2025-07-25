@@ -10,21 +10,20 @@ import (
 	"github.com/gofiber/fiber/v2/log"
 )
 
-
 func AuthRegister(c *fiber.Ctx) error {
 	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
 	var request dto.AuthUserRegisterRequest
 	if err := c.BodyParser(&request); err != nil {
 		log.Error(currentAccess.RequestID, " invalid bind json payload ")
 		c.Status(fiber.StatusBadRequest).
-		JSON(fiber.NewError(fiber.StatusBadRequest, " invalid bind json payload"))
+			JSON(fiber.NewError(fiber.StatusBadRequest, " invalid bind json payload"))
 		return nil
 	}
 
 	if err := helper.ValidateStruct(&request); err != nil {
 		log.Error(currentAccess.RequestID, " Error validation ", err.Error())
 		c.Status(fiber.StatusUnprocessableEntity).
-		JSON(fiber.NewError(fiber.StatusUnprocessableEntity, err.Error()))
+			JSON(fiber.NewError(fiber.StatusUnprocessableEntity, err.Error()))
 		return nil
 	}
 	c.Locals(locals.PayloadLocalKey, request)
@@ -41,14 +40,14 @@ func AuthLogin(c *fiber.Ctx) error {
 	if err := c.BodyParser(&request); err != nil {
 		log.Error(currentAccess.RequestID, " invalid bind json payload ")
 		c.Status(fiber.StatusBadRequest).
-		JSON(fiber.NewError(fiber.StatusBadRequest, " invalid bind json payload"))
+			JSON(fiber.NewError(fiber.StatusBadRequest, " invalid bind json payload"))
 		return nil
 	}
 
 	if err := helper.ValidateStruct(&request); err != nil {
 		log.Error(currentAccess.RequestID, " Error validation ", err.Error())
 		c.Status(fiber.StatusUnprocessableEntity).
-		JSON(fiber.NewError(fiber.StatusUnprocessableEntity, err.Error()))
+			JSON(fiber.NewError(fiber.StatusUnprocessableEntity, err.Error()))
 		return nil
 	}
 	c.Locals(locals.PayloadLocalKey, request)
@@ -89,22 +88,22 @@ func AuthMe(c *fiber.Ctx) error {
 		return nil
 	}
 	return c.Status(fiber.StatusOK).
-	JSON(data)
+		JSON(data)
 }
-func CheckAccess( c *fiber.Ctx) error {
+func CheckAccess(c *fiber.Ctx) error {
 	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
 	var request dto.AuthCheckAccessRequest
 	if err := c.BodyParser(&request); err != nil {
 		log.Error(currentAccess.RequestID, " invalid bind json payload ")
 		c.Status(fiber.StatusBadRequest).
-		JSON(fiber.NewError(fiber.StatusBadRequest, " invalid bind json payload"))
+			JSON(fiber.NewError(fiber.StatusBadRequest, " invalid bind json payload"))
 		return nil
 	}
 
 	if err := helper.ValidateStruct(&request); err != nil {
 		log.Error(currentAccess.RequestID, " Error validation ", err.Error())
 		c.Status(fiber.StatusUnprocessableEntity).
-		JSON(fiber.NewError(fiber.StatusUnprocessableEntity, err.Error()))
+			JSON(fiber.NewError(fiber.StatusUnprocessableEntity, err.Error()))
 		return nil
 	}
 
@@ -126,6 +125,6 @@ func GetMyAcl(c *fiber.Ctx) error {
 	}
 	return c.Status(fiber.StatusOK).
 		JSON(fiber.Map{
-			"data":   nil,
+			"data": nil,
 		})
 }
