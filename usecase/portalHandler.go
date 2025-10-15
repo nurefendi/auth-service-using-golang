@@ -136,13 +136,14 @@ func (p *portalUseCase) FindById(c *fiber.Ctx, id uuid.UUID) (*dto.PortalDto, *f
 	}
 	return &result, &fiber.Error{}
 }
+
 // FindAll implements Portal.
 func (p *portalUseCase) FindAll(c *fiber.Ctx, r dto.PortalPagination) ([]dto.PortalUserDto, int64, *fiber.Error) {
 	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
 	data, total, errf := portalRepository.FindAll(c, r)
 	if errf != nil {
 		log.Error(currentAccess.RequestID, errf.Message)
-		return nil,0, errf
+		return nil, 0, errf
 	}
 	var result []dto.PortalUserDto
 	for _, v := range data {
@@ -155,12 +156,12 @@ func (p *portalUseCase) FindAll(c *fiber.Ctx, r dto.PortalPagination) ([]dto.Por
 			}
 		}
 		result = append(result, dto.PortalUserDto{
-			ID: v.ID,
-			Order: v.Order,
-			Path: v.Path,
-			Icon: v.Icon,
-			FontIcon: v.FontIcon,
-			PortalName: portalName,
+			ID:          v.ID,
+			Order:       v.Order,
+			Path:        v.Path,
+			Icon:        v.Icon,
+			FontIcon:    v.FontIcon,
+			PortalName:  portalName,
 			Description: portalDescription,
 		})
 	}

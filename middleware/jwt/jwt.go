@@ -4,19 +4,35 @@ import (
 	"errors"
 	"os"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 )
 
-var secretKey = []byte(os.Getenv("SECRET_KEY"))
+var secretKey []byte
+
+func init() {
+	// Load secret key and validate
+	s := os.Getenv("SECRET_KEY")
+	if s == "" {
+		// In CI/Dev, allow a default non-production secret so tests can run.
+		// In production, ensure SECRET_KEY is set.
+		log.Warn("SECRET_KEY is not set; using default development secret")
+		s = "dev-secret-CHANGE_ME"
+	}
+	secretKey = []byte(s)
+}
 
 func JwtClaims(c *fiber.Ctx, tokenString string) (jwt.MapClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return secretKey, nil
 	})
 	if err != nil {
-		log.Error(c.IP(), " ", err.Error())
+		ip := ""
+		if c != nil {
+			ip = c.IP()
+		}
+		log.Error(ip, " ", err.Error())
 		return nil, err
 	}
 
@@ -27,11 +43,12 @@ func JwtClaims(c *fiber.Ctx, tokenString string) (jwt.MapClaims, error) {
 	return nil, errors.New("invalid token")
 }
 
-func GenerateToken(claim jwt.Claims) (*string, error) {
-	jwt := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
-	token, err := jwt.SignedString(secretKey)
+// GenerateToken returns a signed token string (not pointer) to simplify callers.
+func GenerateToken(claim jwt.Claims) (string, error) {
+	t := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
+	token, err := t.SignedString(secretKey)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	return &token, nil
+	return token, nil
 }

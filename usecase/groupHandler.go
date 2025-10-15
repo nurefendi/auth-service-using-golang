@@ -33,13 +33,13 @@ func (g *groupUseCase) FindAll(c *fiber.Ctx, r dto.GroupPagination) ([]dto.Group
 	data, total, errf := groupRepository.FindAll(c, r)
 	if errf != nil {
 		log.Error(currentAccess.RequestID, errf.Message)
-		return nil,0, errf
+		return nil, 0, errf
 	}
 	var result []dto.GroupDto
 	for _, v := range data {
 		result = append(result, dto.GroupDto{
-			ID: &v.ID,
-			Name: v.Name,
+			ID:          &v.ID,
+			Name:        v.Name,
 			Description: v.Description,
 		})
 	}
@@ -67,7 +67,7 @@ func (g *groupUseCase) FindById(c *fiber.Ctx, id uuid.UUID) (*dto.GroupDto, *fib
 func (g *groupUseCase) Save(c *fiber.Ctx, data *dto.GroupDto) *fiber.Error {
 	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
 	saveError := groupRepository.Save(c, &dao.AuthGroup{
-		Name: data.Name,
+		Name:        data.Name,
 		Description: data.Description,
 		AuditorDAO: dao.AuditorDAO{
 			CreatedBy: currentAccess.UserAccess.UserName,
@@ -94,7 +94,7 @@ func (g *groupUseCase) Update(c *fiber.Ctx, data *dto.GroupDto) *fiber.Error {
 	}
 
 	saveError := groupRepository.Save(c, &dao.AuthGroup{
-		Name: data.Name,
+		Name:        data.Name,
 		Description: data.Description,
 		AuditorDAO: dao.AuditorDAO{
 			ModifiedBy: &currentAccess.UserAccess.Email,

@@ -34,18 +34,18 @@ func (u *userUseCase) FindAll(c *fiber.Ctx, r dto.UserPagination) ([]dto.UserDto
 	data, total, errf := userRepository.FindAll(c, r)
 	if errf != nil {
 		log.Error(currentAccess.RequestID, errf.Message)
-		return nil,0, errf
+		return nil, 0, errf
 	}
 	var result []dto.UserDto
 	for _, v := range data {
 		result = append(result, dto.UserDto{
-			ID: &v.ID,
-			Gender: v.Gender,
-			FullName: v.FullName,
-			Email: v.Email,
-			Username: v.Username,
+			ID:        &v.ID,
+			Gender:    v.Gender,
+			FullName:  v.FullName,
+			Email:     v.Email,
+			Username:  v.Username,
 			Telephone: v.Telephone,
-			Picture: v.Picture,
+			Picture:   v.Picture,
 		})
 	}
 	return result, total, nil
@@ -60,19 +60,18 @@ func (u *userUseCase) FindById(c *fiber.Ctx, id uuid.UUID) (*dto.UserDto, *fiber
 		return nil, errf
 	}
 	var groupIds []uuid.UUID
-	for _, v := range data.Goups {
+	for _, v := range data.Groups {
 		groupIds = append(groupIds, v.ID)
 	}
 	return &dto.UserDto{
-		ID: &data.ID,
-		Gender: data.Gender,
-		FullName: data.FullName,
-		Email: data.Email,
-		Username: data.Username,
+		ID:        &data.ID,
+		Gender:    data.Gender,
+		FullName:  data.FullName,
+		Email:     data.Email,
+		Username:  data.Username,
 		Telephone: data.Telephone,
-		Picture: data.Picture,
-		GroupIDs: groupIds,
-
+		Picture:   data.Picture,
+		GroupIDs:  groupIds,
 	}, &fiber.Error{}
 }
 
@@ -85,14 +84,14 @@ func (u *userUseCase) Save(c *fiber.Ctx, data *dto.UserDto) *fiber.Error {
 	if err != nil {
 		log.Error(currentAccess.RequestID, " Invalid hash password")
 		return &fiber.Error{
-			Code: fiber.StatusInternalServerError,
+			Code:    fiber.StatusInternalServerError,
 			Message: "Invalid hash password",
 		}
 	}
 	existUser, fibererr := userRepository.FindByEmail(c, &data.Email)
-	if fibererr != nil || existUser.ID != uuid.Nil{
+	if fibererr != nil || existUser.ID != uuid.Nil {
 		return &fiber.Error{
-			Code: fibererr.Code,
+			Code:    fibererr.Code,
 			Message: fibererr.Error(),
 		}
 	}
@@ -103,22 +102,22 @@ func (u *userUseCase) Save(c *fiber.Ctx, data *dto.UserDto) *fiber.Error {
 			GroupID: v,
 			AuditorDAO: dao.AuditorDAO{
 				CreatedBy: currentAccess.UserAccess.Email,
-				ID: uuid.New(),
+				ID:        uuid.New(),
 			},
 		})
 	}
 	dataUser := dao.AuthUser{
-		FullName: data.FullName,
-		Email: data.Email,
-		Password: password,
-		Gender: data.Gender,
+		FullName:   data.FullName,
+		Email:      data.Email,
+		Password:   password,
+		Gender:     data.Gender,
 		HasDeleted: false,
-		Username: data.Username,
-		Picture: data.Picture,
-		Goups: groups,
-		Telephone: data.Telephone,
+		Username:   data.Username,
+		Picture:    data.Picture,
+		Groups:     groups,
+		Telephone:  data.Telephone,
 		AuditorDAO: dao.AuditorDAO{
-			ID: uuid.New(),
+			ID:        uuid.New(),
 			CreatedBy: currentAccess.UserAccess.Email,
 		},
 	}

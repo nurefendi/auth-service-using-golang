@@ -19,14 +19,14 @@ func SavePortal(c *fiber.Ctx) error {
 	if err := c.BodyParser(&request); err != nil {
 		log.Error(currentAccess.RequestID, " invalid bind json payload ")
 		c.Status(fiber.StatusBadRequest).
-		JSON(fiber.NewError(fiber.StatusBadRequest, " invalid bind json payload"))
+			JSON(fiber.NewError(fiber.StatusBadRequest, " invalid bind json payload"))
 		return err
 	}
 
 	if err := helper.ValidateStruct(&request); err != nil {
 		log.Error(currentAccess.RequestID, " Error validation ", err.Error())
 		c.Status(fiber.StatusUnprocessableEntity).
-		JSON(fiber.NewError(fiber.StatusUnprocessableEntity, err.Error()))
+			JSON(fiber.NewError(fiber.StatusUnprocessableEntity, err.Error()))
 		return err
 	}
 	fibererr := usecase.PortalUseCase().Save(c, &request)
@@ -43,14 +43,14 @@ func UpdatePortal(c *fiber.Ctx) error {
 	if err := c.BodyParser(&request); err != nil {
 		log.Error(currentAccess.RequestID, " invalid bind json payload ")
 		c.Status(fiber.StatusBadRequest).
-		JSON(fiber.NewError(fiber.StatusBadRequest, " invalid bind json payload"))
+			JSON(fiber.NewError(fiber.StatusBadRequest, " invalid bind json payload"))
 		return err
 	}
 
 	if err := helper.ValidateStruct(&request); err != nil {
 		log.Error(currentAccess.RequestID, " Error validation ", err.Error())
 		c.Status(fiber.StatusUnprocessableEntity).
-		JSON(fiber.NewError(fiber.StatusUnprocessableEntity, err.Error()))
+			JSON(fiber.NewError(fiber.StatusUnprocessableEntity, err.Error()))
 		return err
 	}
 	fibererr := usecase.PortalUseCase().Update(c, &request)
@@ -64,32 +64,32 @@ func GetPortalById(c *fiber.Ctx) error {
 	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
 
 	uid, err := uuid.Parse(c.Params("id"))
-    if err != nil {
+	if err != nil {
 		log.Info(currentAccess.RequestID, " Invalid Id")
 		c.Status(fiber.StatusBadRequest).
-		JSON(fiber.NewError(fiber.StatusBadRequest, " Invalid Id "))
-        return err
-    }
-	
+			JSON(fiber.NewError(fiber.StatusBadRequest, " Invalid Id "))
+		return err
+	}
+
 	data, fibererr := usecase.PortalUseCase().FindById(c, uid)
 	if fibererr != nil {
 		c.Status(fibererr.Code).SendString(fibererr.Message)
 		return errors.New(fibererr.Error())
 	}
 	return c.Status(fiber.StatusOK).
-	JSON(&data)
+		JSON(&data)
 }
 func DeletePortalById(c *fiber.Ctx) error {
 	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
 
 	uid, err := uuid.Parse(c.Params("id"))
-    if err != nil {
+	if err != nil {
 		log.Info(currentAccess.RequestID, " Invalid Id")
 		c.Status(fiber.StatusBadRequest).
-		JSON(fiber.NewError(fiber.StatusBadRequest, " Invalid Id "))
-        return err
-    }
-	
+			JSON(fiber.NewError(fiber.StatusBadRequest, " Invalid Id "))
+		return err
+	}
+
 	fibererr := usecase.PortalUseCase().Delete(c, uid)
 	if fibererr != nil {
 		c.Status(fibererr.Code).SendString(fibererr.Message)
@@ -104,7 +104,7 @@ func GetPortal(c *fiber.Ctx) error {
 	if err := c.BodyParser(&request); err != nil {
 		log.Error(currentAccess.RequestID, " invalid bind json payload ")
 		c.Status(fiber.StatusBadRequest).
-		JSON(fiber.NewError(fiber.StatusBadRequest, " invalid bind json payload"))
+			JSON(fiber.NewError(fiber.StatusBadRequest, " invalid bind json payload"))
 		return err
 	}
 
@@ -115,11 +115,11 @@ func GetPortal(c *fiber.Ctx) error {
 		return errors.New(fibererr.Error())
 	}
 	return c.Status(fiber.StatusOK).
-	JSON(fiber.Map{
-		"data": data,
-		"limit": request.Limit,
-		"offset": request.Offset,
-		"search": request.Search,
-		"total": total,
-	})
+		JSON(fiber.Map{
+			"data":   data,
+			"limit":  request.Limit,
+			"offset": request.Offset,
+			"search": request.Search,
+			"total":  total,
+		})
 }

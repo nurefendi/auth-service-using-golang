@@ -34,7 +34,7 @@ func (f *functionUseCase) FindAll(c *fiber.Ctx, r dto.FunctionPagination) ([]dto
 	data, total, errf := functionRepository.FindAll(c, r)
 	if errf != nil {
 		log.Error(currentAccess.RequestID, errf.Message)
-		return nil,0, errf
+		return nil, 0, errf
 	}
 	var result []dto.FunctionUserDto
 	for _, v := range data {
@@ -47,17 +47,17 @@ func (f *functionUseCase) FindAll(c *fiber.Ctx, r dto.FunctionPagination) ([]dto
 			}
 		}
 		result = append(result, dto.FunctionUserDto{
-			ID: v.ID,
-			Order: v.Order,
-			Path: v.Path,
-			Icon: v.Icon,
-			FontIcon: v.FontIcon,
+			ID:           v.ID,
+			Order:        v.Order,
+			Path:         v.Path,
+			Icon:         v.Icon,
+			FontIcon:     v.FontIcon,
 			FunctionName: functionName,
-			Description: funcDesc,
-			PortalID: v.PortalID,
-			Method: v.Method,
-			Position: v.Position,
-			ShortcutKey: v.ShortcutKey,
+			Description:  funcDesc,
+			PortalID:     v.PortalID,
+			Method:       v.Method,
+			Position:     v.Position,
+			ShortcutKey:  v.ShortcutKey,
 		})
 	}
 	return result, total, nil

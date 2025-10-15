@@ -18,7 +18,7 @@ func Save(c *fiber.Ctx) *fiber.Error {
 	if db == nil {
 		log.Error(currentAcess.RequestID, " error cannot find db connection")
 		return &fiber.Error{
-			Code: fiber.StatusInternalServerError,
+			Code:    fiber.StatusInternalServerError,
 			Message: "Unable to conect database",
 		}
 	}
@@ -26,7 +26,7 @@ func Save(c *fiber.Ctx) *fiber.Error {
 	if saveRecord.Error != nil {
 		log.Error(currentAcess.RequestID, " error ", saveRecord.Error.Error())
 		return &fiber.Error{
-			Code: fiber.StatusUnprocessableEntity,
+			Code:    fiber.StatusUnprocessableEntity,
 			Message: saveRecord.Error.Error(),
 		}
 	}
@@ -40,7 +40,7 @@ func FindByEmail(c *fiber.Ctx, email *string) (*dao.AuthUser, *fiber.Error) {
 	if db == nil {
 		log.Error(currentAcess.RequestID, " error cannot find db connection")
 		return nil, &fiber.Error{
-			Code: fiber.StatusInternalServerError,
+			Code:    fiber.StatusInternalServerError,
 			Message: "Unable to conect database",
 		}
 	}
@@ -51,7 +51,7 @@ func FindByEmail(c *fiber.Ctx, email *string) (*dao.AuthUser, *fiber.Error) {
 	if err != nil {
 		log.Error(currentAcess.RequestID, err.Error())
 		return nil, &fiber.Error{
-			Code: fiber.StatusUnprocessableEntity,
+			Code:    fiber.StatusUnprocessableEntity,
 			Message: err.Error(),
 		}
 	}
@@ -65,19 +65,19 @@ func FindById(c *fiber.Ctx, id uuid.UUID) (dao.AuthUser, *fiber.Error) {
 	if db == nil {
 		log.Error(currentAcess.RequestID, " error cannot find db connection")
 		return dao.AuthUser{}, &fiber.Error{
-			Code: fiber.StatusInternalServerError,
+			Code:    fiber.StatusInternalServerError,
 			Message: "Unable to conect database",
 		}
 	}
 	var data dao.AuthUser
 	err := db.Model(&dao.AuthUser{}).
 		Where("id = ?", id).
-		Preload("Goups").
+		Preload("Groups").
 		Find(&data).Error
 	if err != nil {
 		log.Error(currentAcess.RequestID, err.Error())
 		return dao.AuthUser{}, &fiber.Error{
-			Code: fiber.StatusUnprocessableEntity,
+			Code:    fiber.StatusUnprocessableEntity,
 			Message: err.Error(),
 		}
 	}
@@ -91,7 +91,7 @@ func FindByUserName(c *fiber.Ctx, username *string) (*dao.AuthUser, *fiber.Error
 	if db == nil {
 		log.Error(currentAcess.RequestID, " error cannot find db connection")
 		return nil, &fiber.Error{
-			Code: fiber.StatusInternalServerError,
+			Code:    fiber.StatusInternalServerError,
 			Message: "Unable to conect database",
 		}
 	}
@@ -102,7 +102,7 @@ func FindByUserName(c *fiber.Ctx, username *string) (*dao.AuthUser, *fiber.Error
 	if err != nil {
 		log.Error(currentAcess.RequestID, err.Error())
 		return nil, &fiber.Error{
-			Code: fiber.StatusUnprocessableEntity,
+			Code:    fiber.StatusUnprocessableEntity,
 			Message: err.Error(),
 		}
 	}
@@ -133,7 +133,7 @@ func Delete(c *fiber.Ctx, id uuid.UUID) *fiber.Error {
 	log.Info(currentAccess.RequestID, " Deleted portal from DB, Affected rows: ", deleteRecord.RowsAffected)
 	return nil
 }
-func FindAll(c *fiber.Ctx, r dto.UserPagination) ([]dao.AuthUser, int64, *fiber.Error)  {
+func FindAll(c *fiber.Ctx, r dto.UserPagination) ([]dao.AuthUser, int64, *fiber.Error) {
 	db := database.GetDBConnection(c)
 	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
 	var resultDao []dao.AuthUser
@@ -144,15 +144,15 @@ func FindAll(c *fiber.Ctx, r dto.UserPagination) ([]dao.AuthUser, int64, *fiber.
 		searchPattern := "%" + r.Search + "%"
 		query = query.Where("full_name LIKE ? OR email LIKE ?", searchPattern, searchPattern)
 	}
-	
+
 	query.Count(&total)
 	offset := (r.Offset - 1) * r.Limit
 
-	result := query.Preload("Goups").Order("created_at DESC").Limit(r.Limit).Offset(offset).Find(&resultDao)
+	result := query.Preload("Groups").Order("created_at DESC").Limit(r.Limit).Offset(offset).Find(&resultDao)
 	if result.Error != nil {
 		log.Error(currentAccess.RequestID, " error ", result.Error.Error())
 		return nil, 0, fiber.NewError(fiber.StatusInternalServerError, result.Error.Error())
 	}
 
-	return  resultDao, total, nil
+	return resultDao, total, nil
 }

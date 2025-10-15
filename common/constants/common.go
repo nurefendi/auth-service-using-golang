@@ -11,5 +11,5 @@ const (
 	BEARER     = "Bearer "
 
 	//channel
-	CHANNEL_SYSTEM  = "INTERNAL_SYSTEM"
+	CHANNEL_SYSTEM = "INTERNAL_SYSTEM"
 )

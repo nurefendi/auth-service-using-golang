@@ -35,4 +35,3 @@ func Delete(c *fiber.Ctx, portalID uuid.UUID) *fiber.Error {
 	log.Info(currentAccess.RequestID, " Deleted portal from DB, Affected rows: ", deleteRecord.RowsAffected)
 	return nil
 }
-

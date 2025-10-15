@@ -1,13 +1,13 @@
 package environment
 
 import (
+	"auth-service/common/constants"
 	"fmt"
 	"os"
 	"strings"
-	"auth-service/common/constants"
 
-	"github.com/joho/godotenv"
 	"github.com/gofiber/fiber/v2/log"
+	"github.com/joho/godotenv"
 )
 
 func loadEnvVariables(key string) error {

@@ -10,8 +10,9 @@ import (
 	"errors"
 	"strings"
 	"time"
+	"os"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/google/uuid"
@@ -102,21 +103,23 @@ func getUserAccess(c *fiber.Ctx) (*dto.CurrentUserAccess, error) {
 		if ve, ok := err.(*jwt.ValidationError); ok && ve.Errors&jwt.ValidationErrorExpired != 0 {
 			return handleExpiredToken(c)
 		}
-		log.Error(c.IP(), " Invalid token: ", err.Error())
-		c.Status(fiber.StatusUnauthorized).SendString("Invalid token")
+		ip := c.IP()
+		log.Error(ip, " Invalid token: ", err.Error())
 		return nil, errors.New("invalid token")
 	}
-
-	userID, err := uuid.Parse(dataClaim["userId"].(string))
+	// safe claim extraction
+	userIDStr, _ := dataClaim["userId"].(string)
+	userName, _ := dataClaim["userName"].(string)
+	email, _ := dataClaim["email"].(string)
+	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
-		c.Status(fiber.StatusUnauthorized).SendString("Invalid user ID")
 		return nil, errors.New("invalid user ID")
 	}
 
 	userAccess := dto.CurrentUserAccess{
 		UserID:   userID,
-		UserName: dataClaim["userName"].(string),
-		Email:    dataClaim["email"].(string),
+		UserName: userName,
+		Email:    email,
 	}
 
 	return &userAccess, nil
@@ -126,49 +129,55 @@ func handleExpiredToken(c *fiber.Ctx) (*dto.CurrentUserAccess, error) {
 	refreshToken := c.Cookies("refresh_token")
 	if refreshToken == "" {
 		log.Error(c.IP(), " Empty refresh token")
-		c.Status(fiber.StatusUnauthorized).SendString("Invalid token")
 		return nil, errors.New("invalid token")
 	}
 
 	refreshClaim, err := jwtMidleware.JwtClaims(c, refreshToken)
 	if err != nil {
 		log.Error(c.IP(), " Error claim: ", err.Error())
-		c.Status(fiber.StatusUnauthorized).SendString("Invalid token")
 		return nil, errors.New("invalid token")
 	}
 
-	userID, err := uuid.Parse(refreshClaim["userId"].(string))
+	userIDStr, _ := refreshClaim["userId"].(string)
+	userName, _ := refreshClaim["userName"].(string)
+	email, _ := refreshClaim["email"].(string)
+
+	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
-		c.Status(fiber.StatusUnauthorized).SendString("Invalid user ID")
 		return nil, errors.New("invalid user ID")
 	}
 
 	dataRefreshToken, err := authRefreshTokenRepository.FindByUserIdAndToken(c, userID, refreshToken)
 	if err != nil || dataRefreshToken.ID == uuid.Nil {
 		log.Error(c.IP(), " Invalid refresh token: ", err)
-		c.Status(fiber.StatusUnauthorized).SendString("Invalid token")
 		return nil, errors.New("invalid token")
 	}
 
 	expirationTime := time.Now().Add(15 * time.Minute)
 	userAccess := dto.CurrentUserAccess{
 		UserID:   userID,
-		UserName: refreshClaim["userName"].(string),
-		Email:    refreshClaim["email"].(string),
+		UserName: userName,
+		Email:    email,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 		},
 	}
 
 	token, err := jwtMidleware.GenerateToken(userAccess)
-	if err == nil && token != nil {
+	if err == nil && token != "" {
+		sameSite := "Strict"
+		secure := true
+		if os.Getenv("APP_ENV") == "local" {
+			sameSite = "Lax"
+			secure = false
+		}
 		c.Cookie(&fiber.Cookie{
 			Name:     "token",
-			Value:    *token,
+			Value:    token,
 			Expires:  expirationTime,
-			Secure:   true,
+			Secure:   secure,
 			HTTPOnly: true,
-			SameSite: "Strict",
+			SameSite: sameSite,
 		})
 	}
 

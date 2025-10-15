@@ -12,7 +12,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 func Save(c *fiber.Ctx, data *dao.AuthPermission) error {
@@ -80,7 +79,8 @@ func FindByGroupIdAndPathAndMethod(c *fiber.Ctx, path, method string) (bool, err
 	`
 
 	var isExist bool
-	err := db.Raw(query, strings.ToLower(path), gorm.Expr("?", currentAccess.UserAccess.UserID)).Scan(&isExist).Error
+	// Use direct parameter substitution for user id
+	err := db.Raw(query, strings.ToLower(path), currentAccess.UserAccess.UserID).Scan(&isExist).Error
 	if err != nil {
 		log.Error(currentAccess.RequestID, " error ", err.Error())
 		return false, err
@@ -96,6 +96,9 @@ func FindByGroupIds(c *fiber.Ctx, groupIds []uuid.UUID) (*[]dao.AuthPermission, 
 	err := db.Model(dao.AuthPermission{}).
 		Where("group_id in (?)", groupIds).
 		Preload("Function").
+		Preload("Function.Lang").
+		Preload("Function.Portal").
+		Preload("Function.Portal.Lang").
 		Find(&result).Error
 	if err != nil {
 		log.Info(currentAcess.RequestID, err.Error())

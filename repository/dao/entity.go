@@ -8,11 +8,11 @@ import (
 )
 
 type AuditorDAO struct {
-	ID         uuid.UUID  `gorm:"type:uuid;primary_key;default:(UUID())"`
-	CreatedBy  string     `gorm:"'created_by'"`
-	CreatedAt  time.Time  `gorm:"autoCreateTime:true'created_at'"`
-	ModifiedBy *string    `gorm:"'modified_by'"`
-	ModifiedAt *time.Time `gorm:"autoUpdateTime:true'modified_at'"`
+	ID         uuid.UUID  `gorm:"type:uuid;primaryKey;default:uuid_generate_v4()"`
+	CreatedBy  string     `gorm:"column:created_by"`
+	CreatedAt  time.Time  `gorm:"autoCreateTime;column:created_at"`
+	ModifiedBy *string    `gorm:"column:modified_by"`
+	ModifiedAt *time.Time `gorm:"autoUpdateTime;column:modified_at"`
 }
 
 // GenderLang represents the gender_lang table
@@ -34,7 +34,7 @@ type AuthUser struct {
 	HasDeleted bool            `gorm:"not null;default:false"`
 	Picture    *string         `gorm:"type:varchar(255)"`
 	GenderLang []GenderLang    `gorm:"foreignKey:Gender;references:Gender"`
-	Goups      []AuthUserGroup `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCAD"`
+	Groups     []AuthUserGroup `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE"`
 	AuditorDAO
 }
 
@@ -49,8 +49,8 @@ type AuthGroup struct {
 type AuthUserGroup struct {
 	UserID  uuid.UUID   `gorm:"type:uuid;not null"`
 	GroupID uuid.UUID   `gorm:"type:uuid;not null"`
-	User    AuthUser    `gorm:"foreignKey:ID;references:UserID;constraint:OnDelete:CASCADE"`
-	Group   []AuthGroup `gorm:"foreignKey:ID;references:GroupID;constraint:OnDelete:CASCADE"`
+	User    AuthUser    `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE"`
+	Group   []AuthGroup `gorm:"foreignKey:GroupID;references:ID;constraint:OnDelete:CASCADE"`
 	AuditorDAO
 }
 
@@ -86,6 +86,7 @@ type AuthFunction struct {
 	Order       int                `gorm:"type:int(3);not null"`
 	Path        string             `gorm:"type:varchar(255);not null"`
 	Lang        []AuthFunctionLang `gorm:"foreignKey:FunctionID;constraint:OnDelete:CASCADE"`
+	Portal      AuthPortal         `gorm:"foreignKey:PortalID;references:ID;constraint:OnDelete:CASCADE"`
 	AuditorDAO
 }
 
@@ -114,5 +115,15 @@ type AuthRefreshTokens struct {
 	UserID    uuid.UUID `gorm:"type:uuid;not null;index"`
 	Token     string    `gorm:"type:text;not null;unique"`
 	ExpiresAt time.Time `gorm:"type:timestamp;not null"`
+	AuditorDAO
+}
+
+// AuthAudit represents audit log for sensitive actions
+type AuthAudit struct {
+	Action    string    `gorm:"type:varchar(100);not null"`
+	UserID    *uuid.UUID `gorm:"type:uuid;index"`
+	IP        *string   `gorm:"type:varchar(45)"`
+	UserAgent *string   `gorm:"type:text"`
+	Metadata  *string   `gorm:"type:text"` // optional JSON
 	AuditorDAO
 }

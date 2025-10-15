@@ -1,0 +1,28 @@
+-- Migration: create auth_audit table
+
+-- PostgreSQL
+-- CREATE TABLE IF NOT EXISTS auth_audit (
+--   id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+--   action varchar(100) NOT NULL,
+--   user_id uuid,
+--   ip varchar(45),
+--   user_agent text,
+--   metadata jsonb,
+--   created_by varchar(255),
+--   created_at timestamptz DEFAULT now()
+-- );
+-- CREATE INDEX IF NOT EXISTS idx_auth_audit_user_id ON auth_audit (user_id);
+
+-- MySQL / MariaDB
+-- CREATE TABLE IF NOT EXISTS auth_audit (
+--   id BINARY(16) NOT NULL,
+--   action VARCHAR(100) NOT NULL,
+--   user_id BINARY(16),
+--   ip VARCHAR(45),
+--   user_agent TEXT,
+--   metadata TEXT,
+--   created_by VARCHAR(255),
+--   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--   PRIMARY KEY (id)
+-- ) ENGINE=InnoDB;
+-- CREATE INDEX idx_auth_audit_user_id ON auth_audit (user_id);

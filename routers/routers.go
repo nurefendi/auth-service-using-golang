@@ -17,7 +17,10 @@ func HandleRouter(app *fiber.App) {
 	})
 
 	api.Post("/auth/register", middleware.SetMiddlewareJSON(), controllers.AuthRegister)
-	api.Post("/auth/login", middleware.SetMiddlewareJSON(), controllers.AuthLogin)
+	api.Post("/auth/login", middleware.SetMiddlewareJSON(), middleware.SetRateLimit(), controllers.AuthLogin)
+
+	// admin: unlock account
+	api.Post("/admin/unlock", middleware.SetMiddlewareJSON(), middleware.SetMiddlewareAUTH(true), controllers.UnlockAccount)
 
 	// need whitelist this path in midleware
 	api.Get("/auth/logout", middleware.SetMiddlewareAUTH(false), controllers.AuthLogout)
@@ -48,7 +51,7 @@ func HandleRouter(app *fiber.App) {
 	api.Post("/group", middleware.SetMiddlewareAUTH(true), controllers.SaveGroup)
 	api.Put("/group", middleware.SetMiddlewareAUTH(true), controllers.UpdateGroup)
 	api.Delete("/group/:id", middleware.SetMiddlewareAUTH(true), controllers.DeleteGroupById)
-	
+
 	api.Get("/acl", middleware.SetMiddlewareAUTH(false), controllers.GetMyAcl)
 
 }

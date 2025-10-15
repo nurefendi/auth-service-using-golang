@@ -39,4 +39,24 @@ jobs:
         run: GOMAXPROCS=1 go build -v ./...
 
       - name: Test
-        run: GOMAXPROCS=1 go test -race -v ./...
+        run: |
+          GOMAXPROCS=1 go test -race -v -coverprofile=coverage.out ./...
+
+      - name: Show coverage
+        run: |
+          go tool cover -func=coverage.out | sed -n '1,200p'
+
+      - name: Enforce coverage threshold
+        env:
+          COVERAGE_THRESHOLD: ${{ secrets.COVERAGE_THRESHOLD || '100.0' }}
+        run: |
+          pc=$(go tool cover -func=coverage.out | tail -n1 | awk '{print $3}' | sed 's/%//')
+          echo "Coverage is $pc%"
+          threshold=${COVERAGE_THRESHOLD}
+          awk -v pc="$pc" -v th="$threshold" 'BEGIN{if(pc+0 < th+0){print "Coverage below threshold"; exit 1}}'
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.out

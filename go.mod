@@ -3,6 +3,7 @@ module auth-service
 go 1.23
 
 require (
+	github.com/golang-jwt/jwt/v4 v4.5.2
 	golang.org/x/crypto v0.32.0
 	gorm.io/driver/mysql v1.5.7
 )
@@ -21,7 +22,6 @@ require (
 
 require (
 	github.com/andybalholm/brotli v1.1.0 // indirect
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fatih/structs v1.1.0
 	github.com/go-playground/validator/v10 v10.25.0
 	github.com/go-sql-driver/mysql v1.7.0 // indirect

@@ -15,14 +15,20 @@ const (
 )
 
 func SetLocals(c *fiber.Ctx, local dto.UserLocals) {
-	c.Locals(UserLocalKey, local)
+	// store pointer to avoid copying and to allow mutation by reference
+	c.Locals(UserLocalKey, &local)
 }
-
 
 func GetLocals[T any](c *fiber.Ctx, key localKey) *T {
 	value := c.Locals(key)
-	if locals, ok := value.(T); ok {
-		return &locals
+	// support both *T and T stored values
+	switch v := value.(type) {
+	case *T:
+		return v
+	case T:
+		return &v
+	default:
+		_ = v
 	}
 	return nil
 }

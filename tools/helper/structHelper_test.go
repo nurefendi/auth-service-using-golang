@@ -9,8 +9,8 @@ import (
 )
 
 type TestStruct struct {
-	Name  string `json:"name"`
-	Age   int    `json:"age"`
+	Name  string  `json:"name"`
+	Age   int     `json:"age"`
 	Score float64 `json:"score"`
 }
 

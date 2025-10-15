@@ -17,7 +17,7 @@ func Save(c *fiber.Ctx, data *dao.AuthFunction) error {
 	if db == nil {
 		log.Error(currentAcess.RequestID, " error cannot find db connection")
 		return c.Status(fiber.StatusInternalServerError).
-		SendString("Database error")
+			SendString("Database error")
 	}
 	saveRecord := db.Save(data)
 	if saveRecord.Error != nil {
@@ -66,7 +66,7 @@ func Delete(c *fiber.Ctx, portalID uuid.UUID) *fiber.Error {
 	log.Info(currentAccess.RequestID, " Deleted portal from DB, Affected rows: ", deleteRecord.RowsAffected)
 	return nil
 }
-func FindAll(c *fiber.Ctx, r dto.FunctionPagination) ([]dao.AuthFunction, int64, *fiber.Error)  {
+func FindAll(c *fiber.Ctx, r dto.FunctionPagination) ([]dao.AuthFunction, int64, *fiber.Error) {
 	db := database.GetDBConnection(c)
 	currentAccess := locals.GetLocals[dto.UserLocals](c, locals.UserLocalKey)
 	var authFunction []dao.AuthFunction
@@ -77,7 +77,7 @@ func FindAll(c *fiber.Ctx, r dto.FunctionPagination) ([]dao.AuthFunction, int64,
 		searchPattern := "%" + r.Search + "%"
 		query = query.Where("path LIKE ? OR icon LIKE ?", searchPattern, searchPattern)
 	}
-	
+
 	query.Count(&total)
 	offset := (r.Offset - 1) * r.Limit
 
@@ -87,5 +87,5 @@ func FindAll(c *fiber.Ctx, r dto.FunctionPagination) ([]dao.AuthFunction, int64,
 		return nil, 0, fiber.NewError(fiber.StatusInternalServerError, result.Error.Error())
 	}
 
-	return  authFunction, total, nil
+	return authFunction, total, nil
 }
