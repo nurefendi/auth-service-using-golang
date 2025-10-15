@@ -1,20 +1,20 @@
 package middleware
 
 import (
+	"errors"
 	"github.com/nurefendi/auth-service-using-golang/common/constants"
 	"github.com/nurefendi/auth-service-using-golang/dto"
 	jwtMidleware "github.com/nurefendi/auth-service-using-golang/middleware/jwt"
 	authPermissionRepository "github.com/nurefendi/auth-service-using-golang/repository/database/authpermission"
 	authRefreshTokenRepository "github.com/nurefendi/auth-service-using-golang/repository/database/autrefreshtokens"
 	"github.com/nurefendi/auth-service-using-golang/tools/locals"
-	"errors"
+	"os"
 	"strings"
 	"time"
-	"os"
 
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 )
 

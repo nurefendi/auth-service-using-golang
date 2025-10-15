@@ -120,10 +120,10 @@ type AuthRefreshTokens struct {
 
 // AuthAudit represents audit log for sensitive actions
 type AuthAudit struct {
-	Action    string    `gorm:"type:varchar(100);not null"`
+	Action    string     `gorm:"type:varchar(100);not null"`
 	UserID    *uuid.UUID `gorm:"type:uuid;index"`
-	IP        *string   `gorm:"type:varchar(45)"`
-	UserAgent *string   `gorm:"type:text"`
-	Metadata  *string   `gorm:"type:text"` // optional JSON
+	IP        *string    `gorm:"type:varchar(45)"`
+	UserAgent *string    `gorm:"type:text"`
+	Metadata  *string    `gorm:"type:text"` // optional JSON
 	AuditorDAO
 }

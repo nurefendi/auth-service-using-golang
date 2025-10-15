@@ -1,8 +1,8 @@
 package routers
 
 import (
-	"auth-service/controllers"
-	"auth-service/middleware"
+	"github.com/nurefendi/auth-service-using-golang/controllers"
+	"github.com/nurefendi/auth-service-using-golang/middleware"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"

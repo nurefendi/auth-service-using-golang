@@ -1,8 +1,8 @@
 package environment
 
 import (
-	"github.com/nurefendi/auth-service-using-golang/common/constants"
 	"fmt"
+	"github.com/nurefendi/auth-service-using-golang/common/constants"
 	"os"
 	"strings"
 

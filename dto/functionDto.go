@@ -1,9 +1,8 @@
 package dto
 
 import (
-	enums "github.com/nurefendi/auth-service-using-golang/common/enums/httpmethod"
-)
 	"github.com/google/uuid"
+	enums "github.com/nurefendi/auth-service-using-golang/common/enums/httpmethod"
 )
 
 type FunctionDto struct {

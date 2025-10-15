@@ -2,8 +2,8 @@ module github.com/nurefendi/auth-service-using-golang
 
 go 1.23
 
+
 require (
-	auth-service v0.0.0-00010101000000-000000000000
 	github.com/golang-jwt/jwt/v4 v4.5.2
 	golang.org/x/crypto v0.32.0
 	gorm.io/driver/mysql v1.5.7
@@ -44,8 +44,4 @@ require (
 	gorm.io/gorm v1.25.7
 )
 
-// Keep compatibility with existing local imports that use `auth-service/...`.
-// This replace tells the Go toolchain to resolve the `auth-service` module path
-// to the current directory so tools and linters that typecheck imports find
-// the packages in the module root instead of trying to load cached export data.
-replace auth-service => .
+// Note: imports were canonicalized to module github.com/nurefendi/auth-service-using-golang

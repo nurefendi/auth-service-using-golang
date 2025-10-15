@@ -1,12 +1,12 @@
 package autrefreshtokens
 
 import (
+	"errors"
 	"github.com/nurefendi/auth-service-using-golang/config/database"
 	"github.com/nurefendi/auth-service-using-golang/dto"
 	"github.com/nurefendi/auth-service-using-golang/repository/dao"
 	"github.com/nurefendi/auth-service-using-golang/tools/helper"
 	"github.com/nurefendi/auth-service-using-golang/tools/locals"
-	"errors"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"

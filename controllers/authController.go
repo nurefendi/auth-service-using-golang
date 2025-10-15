@@ -1,10 +1,10 @@
 package controllers
 
 import (
-	"auth-service/dto"
-	"auth-service/tools/helper"
-	"auth-service/tools/locals"
-	"auth-service/usecase"
+	"github.com/nurefendi/auth-service-using-golang/dto"
+	"github.com/nurefendi/auth-service-using-golang/tools/helper"
+	"github.com/nurefendi/auth-service-using-golang/tools/locals"
+	"github.com/nurefendi/auth-service-using-golang/usecase"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"

@@ -21,13 +21,13 @@ func Save(c *fiber.Ctx, action string, userId *uuid.UUID, ip *string, userAgent 
 	}
 
 	audit := dao.AuthAudit{
-		Action: action,
-		UserID: userId,
-		IP: ip,
+		Action:    action,
+		UserID:    userId,
+		IP:        ip,
 		UserAgent: userAgent,
-		Metadata: metadata,
+		Metadata:  metadata,
 		AuditorDAO: dao.AuditorDAO{
-			ID: uuid.New(),
+			ID:        uuid.New(),
 			CreatedBy: currentAcess.RequestID,
 		},
 	}

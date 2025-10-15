@@ -1,7 +1,7 @@
 package helper_test
 
 import (
-	"auth-service/tools/helper"
+	"github.com/nurefendi/auth-service-using-golang/tools/helper"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

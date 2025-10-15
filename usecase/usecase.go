@@ -1,10 +1,9 @@
 package usecase
 
 import (
-	"auth-service/dto"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"github.com/nurefendi/auth-service-using-golang/dto"
 )
 
 type (
@@ -23,7 +22,7 @@ type (
 		RefreshToken(c *fiber.Ctx) *fiber.Error
 		Me(c *fiber.Ctx) (dto.AuthUserResponse, *fiber.Error)
 		CheckAccess(c *fiber.Ctx, r dto.AuthCheckAccessRequest) *fiber.Error
-	MyAcl(c *fiber.Ctx) ([]dto.AuthUserFunction, *fiber.Error)
+		MyAcl(c *fiber.Ctx) ([]dto.AuthUserFunction, *fiber.Error)
 	}
 	Portal interface {
 		Save(c *fiber.Ctx, data *dto.PortalDto) *fiber.Error

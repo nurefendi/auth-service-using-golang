@@ -9,17 +9,17 @@ import (
 	"strings"
 	"time"
 
+	"github.com/nurefendi/auth-service-using-golang/middleware"
 	"github.com/nurefendi/auth-service-using-golang/repository/dao"
+	authAuditRepository "github.com/nurefendi/auth-service-using-golang/repository/database/adaudit"
 	authPermissionRepository "github.com/nurefendi/auth-service-using-golang/repository/database/authpermission"
 	authUserRepository "github.com/nurefendi/auth-service-using-golang/repository/database/authuser"
 	authUserGroupRepository "github.com/nurefendi/auth-service-using-golang/repository/database/authusergroup"
 	authRefreshTokensRepository "github.com/nurefendi/auth-service-using-golang/repository/database/autrefreshtokens"
-	authAuditRepository "github.com/nurefendi/auth-service-using-golang/repository/database/adaudit"
-	"github.com/nurefendi/auth-service-using-golang/middleware"
 
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 )
 
@@ -200,9 +200,9 @@ func (a *authUseCase) RefreshToken(c *fiber.Ctx) *fiber.Error {
 		return errr
 	}
 	if err := generateToken(c, dto.CurrentUserAccess{
-		UserID: dataUser.ID,
+		UserID:   dataUser.ID,
 		UserName: dataUser.Username,
-		Email: dataUser.Email,
+		Email:    dataUser.Email,
 		FullName: dataUser.FullName,
 	}); err != nil {
 		return err

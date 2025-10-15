@@ -1,11 +1,11 @@
 package usecase
 
 import (
-	"auth-service/dto"
-	"auth-service/repository/dao"
-	userRepository "auth-service/repository/database/authuser"
-	"auth-service/tools/helper"
-	"auth-service/tools/locals"
+	"github.com/nurefendi/auth-service-using-golang/dto"
+	"github.com/nurefendi/auth-service-using-golang/repository/dao"
+	userRepository "github.com/nurefendi/auth-service-using-golang/repository/database/authuser"
+	"github.com/nurefendi/auth-service-using-golang/tools/helper"
+	"github.com/nurefendi/auth-service-using-golang/tools/locals"
 	"time"
 
 	"github.com/gofiber/fiber/v2"

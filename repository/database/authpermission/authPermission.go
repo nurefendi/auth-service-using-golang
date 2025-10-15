@@ -1,12 +1,12 @@
 package authpermission
 
 import (
+	"errors"
 	enums "github.com/nurefendi/auth-service-using-golang/common/enums/httpmethod"
 	"github.com/nurefendi/auth-service-using-golang/config/database"
 	"github.com/nurefendi/auth-service-using-golang/dto"
 	"github.com/nurefendi/auth-service-using-golang/repository/dao"
 	"github.com/nurefendi/auth-service-using-golang/tools/locals"
-	"errors"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
