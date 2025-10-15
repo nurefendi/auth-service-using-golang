@@ -1,7 +1,7 @@
 package config
 
 import (
-	"auth-service/config/environment"
+	"github.com/nurefendi/auth-service-using-golang/config/environment"
 )
 
 func Init() {

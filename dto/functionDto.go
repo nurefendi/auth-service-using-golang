@@ -1,8 +1,8 @@
 package dto
 
 import (
-	enums "auth-service/common/enums/httpmethod"
-
+	enums "github.com/nurefendi/auth-service-using-golang/common/enums/httpmethod"
+)
 	"github.com/google/uuid"
 )
 

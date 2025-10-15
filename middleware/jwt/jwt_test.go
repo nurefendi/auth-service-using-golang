@@ -1,7 +1,7 @@
 package jwt_test
 
 import (
-	jwtlocal "auth-service/middleware/jwt"
+	jwtlocal "github.com/nurefendi/auth-service-using-golang/middleware/jwt"
 	"os"
 	"testing"
 	"time"

@@ -1,9 +1,9 @@
 package main
 
 import (
-	"auth-service/config"
-	"auth-service/config/database"
-	"auth-service/routers"
+	"github.com/nurefendi/auth-service-using-golang/config"
+	"github.com/nurefendi/auth-service-using-golang/config/database"
+	"github.com/nurefendi/auth-service-using-golang/routers"
 	"log"
 	"os"
 	"os/signal"

@@ -1,7 +1,7 @@
 package dao
 
 import (
-	enums "auth-service/common/enums/httpmethod"
+	enums "github.com/nurefendi/auth-service-using-golang/common/enums/httpmethod"
 	"time"
 
 	"github.com/google/uuid"

@@ -1,12 +1,12 @@
 package middleware
 
 import (
-	"auth-service/common/constants"
-	"auth-service/dto"
-	jwtMidleware "auth-service/middleware/jwt"
-	authPermissionRepository "auth-service/repository/database/authpermission"
-	authRefreshTokenRepository "auth-service/repository/database/autrefreshtokens"
-	"auth-service/tools/locals"
+	"github.com/nurefendi/auth-service-using-golang/common/constants"
+	"github.com/nurefendi/auth-service-using-golang/dto"
+	jwtMidleware "github.com/nurefendi/auth-service-using-golang/middleware/jwt"
+	authPermissionRepository "github.com/nurefendi/auth-service-using-golang/repository/database/authpermission"
+	authRefreshTokenRepository "github.com/nurefendi/auth-service-using-golang/repository/database/autrefreshtokens"
+	"github.com/nurefendi/auth-service-using-golang/tools/locals"
 	"errors"
 	"strings"
 	"time"

@@ -1,7 +1,7 @@
 package environment
 
 import (
-	"auth-service/common/constants"
+	"github.com/nurefendi/auth-service-using-golang/common/constants"
 	"fmt"
 	"os"
 	"strings"
