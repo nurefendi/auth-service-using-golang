@@ -1,11 +1,11 @@
 package authpermission
 
 import (
-	enums "auth-service/common/enums/httpmethod"
-	"auth-service/config/database"
-	"auth-service/dto"
-	"auth-service/repository/dao"
-	"auth-service/tools/locals"
+	enums "github.com/nurefendi/auth-service-using-golang/common/enums/httpmethod"
+	"github.com/nurefendi/auth-service-using-golang/config/database"
+	"github.com/nurefendi/auth-service-using-golang/dto"
+	"github.com/nurefendi/auth-service-using-golang/repository/dao"
+	"github.com/nurefendi/auth-service-using-golang/tools/locals"
 	"errors"
 	"strings"
 

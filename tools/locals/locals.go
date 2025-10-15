@@ -1,7 +1,7 @@
 package locals
 
 import (
-	"auth-service/dto"
+	"github.com/nurefendi/auth-service-using-golang/dto"
 
 	"github.com/gofiber/fiber/v2"
 )

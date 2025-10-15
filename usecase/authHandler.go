@@ -1,21 +1,21 @@
 package usecase
 
 import (
-	"auth-service/dto"
-	jwtMidleware "auth-service/middleware/jwt"
-	"auth-service/tools/helper"
-	"auth-service/tools/locals"
+	"github.com/nurefendi/auth-service-using-golang/dto"
+	jwtMidleware "github.com/nurefendi/auth-service-using-golang/middleware/jwt"
+	"github.com/nurefendi/auth-service-using-golang/tools/helper"
+	"github.com/nurefendi/auth-service-using-golang/tools/locals"
 	"os"
 	"strings"
 	"time"
 
-	"auth-service/repository/dao"
-	authPermissionRepository "auth-service/repository/database/authpermission"
-	authUserRepository "auth-service/repository/database/authuser"
-	authUserGroupRepository "auth-service/repository/database/authusergroup"
-	authRefreshTokensRepository "auth-service/repository/database/autrefreshtokens"
-	authAuditRepository "auth-service/repository/database/adaudit"
-	"auth-service/middleware"
+	"github.com/nurefendi/auth-service-using-golang/repository/dao"
+	authPermissionRepository "github.com/nurefendi/auth-service-using-golang/repository/database/authpermission"
+	authUserRepository "github.com/nurefendi/auth-service-using-golang/repository/database/authuser"
+	authUserGroupRepository "github.com/nurefendi/auth-service-using-golang/repository/database/authusergroup"
+	authRefreshTokensRepository "github.com/nurefendi/auth-service-using-golang/repository/database/autrefreshtokens"
+	authAuditRepository "github.com/nurefendi/auth-service-using-golang/repository/database/adaudit"
+	"github.com/nurefendi/auth-service-using-golang/middleware"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/gofiber/fiber/v2"
