@@ -1,7 +1,7 @@
-# Auth Service with Golang, Fiber, GORM, and MariaDB
+# Auth Service with Golang, Fiber, GORM, MariaDB, and gRPC
 
 ## Description
-This authentication service is built using Golang with the Fiber framework, utilizing GORM as the ORM, and MariaDB as the primary database.
+This authentication service is built using Golang with the Fiber framework, utilizing GORM as the ORM, and MariaDB as the primary database. The service provides both REST API and gRPC endpoints for maximum flexibility.
 
 ## Features
 - User registration
@@ -9,6 +9,9 @@ This authentication service is built using Golang with the Fiber framework, util
 - Authentication middleware
 - Refresh token
 - User management
+- **gRPC API** - Full gRPC implementation alongside REST API
+- Dual server support (REST + gRPC)
+- JWT authentication for both REST and gRPC
 
 ## Prerequisites
 Ensure you have installed:
@@ -105,6 +108,62 @@ app.Use(jwtware.New(jwtware.Config{
       "email": "johndoe@example.com"
     }
     ``` -->
+
+## gRPC Support
+
+This service also provides a full gRPC API alongside the REST API. Both servers run simultaneously:
+
+- **REST API**: Port 9000 (default) or `PORT` environment variable
+- **gRPC Server**: Port 9001 (default) or `GRPC_PORT` environment variable
+
+### gRPC Services
+
+The gRPC API provides the following services:
+
+- **Register**: User registration
+- **Login**: User authentication
+- **RefreshToken**: Refresh access token
+- **Logout**: User logout
+- **ChangePassword**: Change user password
+- **CheckAccess**: Check user access permissions
+- **GetUserProfile**: Get user profile information
+- **GetUserFunctions**: Get user function permissions
+
+### Testing gRPC
+
+1. **Run the gRPC client example**:
+   ```sh
+   go run examples/grpc_client.go
+   ```
+
+2. **Run the complete demo**:
+   ```sh
+   ./examples/run_demo.sh
+   ```
+
+3. **Using grpcurl** (if installed):
+   ```sh
+   # List available services
+   grpcurl -plaintext localhost:9001 list
+   
+   # Test registration
+   grpcurl -plaintext -d '{
+     "full_name": "John Doe",
+     "email": "john@example.com",
+     "password": "password123",
+     "gender": 1
+   }' localhost:9001 auth.AuthService/Register
+   ```
+
+### gRPC Authentication
+
+gRPC calls support JWT authentication via metadata:
+```go
+md := metadata.Pairs("authorization", "Bearer " + accessToken)
+ctx := metadata.NewOutgoingContext(context.Background(), md)
+```
+
+For more details about the gRPC implementation, see [grpc/README.md](grpc/README.md).
 
 <!-- ## Project Structure
 ```

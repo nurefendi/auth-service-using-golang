@@ -3,11 +3,13 @@ services:
     container_name: auth-service
     build: .
     ports:
-      - "${PORT}:9100"   
+      - "${PORT:-9000}:9000"   # REST API
+      - "${GRPC_PORT:-9001}:9001"  # gRPC
     restart: always
     environment:
       - APP_ENV=${APP_ENV}
-      - PORT=${PORT}     
+      - PORT=${PORT:-9000}
+      - GRPC_PORT=${GRPC_PORT:-9001}     
     networks:
       - app-network
     env_file:

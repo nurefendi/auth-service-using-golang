@@ -1,0 +1,154 @@
+syntax = "proto3";
+
+package auth;
+
+option go_package = "github.com/nurefendi/auth-service-using-golang/grpc/pb";
+
+import "google/protobuf/timestamp.proto";
+
+// Auth Service definition
+service AuthService {
+  // User registration
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  
+  // User login
+  rpc Login(LoginRequest) returns (LoginResponse);
+  
+  // Refresh token
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
+  
+  // User logout
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+  
+  // Change password
+  rpc ChangePassword(ChangePasswordRequest) returns (ChangePasswordResponse);
+  
+  // Check access
+  rpc CheckAccess(CheckAccessRequest) returns (CheckAccessResponse);
+  
+  // Get user profile
+  rpc GetUserProfile(GetUserProfileRequest) returns (GetUserProfileResponse);
+  
+  // Get user functions
+  rpc GetUserFunctions(GetUserFunctionsRequest) returns (GetUserFunctionsResponse);
+}
+
+// Messages for User Registration
+message RegisterRequest {
+  string full_name = 1;
+  string email = 2;
+  string password = 3;
+  int32 gender = 4;
+}
+
+message RegisterResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Messages for User Login
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  bool success = 1;
+  string message = 2;
+  string access_token = 3;
+  string refresh_token = 4;
+  google.protobuf.Timestamp expires_at = 5;
+  AuthUser user = 6;
+}
+
+// Messages for Refresh Token
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+message RefreshTokenResponse {
+  bool success = 1;
+  string message = 2;
+  string access_token = 3;
+  string refresh_token = 4;
+  google.protobuf.Timestamp expires_at = 5;
+}
+
+// Messages for Logout
+message LogoutRequest {
+  string refresh_token = 1;
+}
+
+message LogoutResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Messages for Change Password
+message ChangePasswordRequest {
+  string current_password = 1;
+  string new_password = 2;
+}
+
+message ChangePasswordResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Messages for Check Access
+message CheckAccessRequest {
+  string path = 1;
+  string method = 2;
+}
+
+message CheckAccessResponse {
+  bool has_access = 1;
+  string message = 2;
+}
+
+// Messages for Get User Profile
+message GetUserProfileRequest {
+  // Empty - user ID will be extracted from JWT token
+}
+
+message GetUserProfileResponse {
+  bool success = 1;
+  string message = 2;
+  AuthUser user = 3;
+}
+
+// Messages for Get User Functions
+message GetUserFunctionsRequest {
+  // Empty - user ID will be extracted from JWT token
+}
+
+message GetUserFunctionsResponse {
+  bool success = 1;
+  string message = 2;
+  repeated AuthUserFunction functions = 3;
+}
+
+// Common data structures
+message AuthUser {
+  string user_id = 1;
+  string user_name = 2;
+  string email = 3;
+  repeated string group_ids = 4;
+  string full_name = 5;
+  int32 gender = 6;
+  string gender_name = 7;
+  string picture = 8;
+}
+
+message AuthUserFunction {
+  string group_id = 1;
+  string group_name = 2;
+  string portal_id = 3;
+  string portal_name = 4;
+  string function_id = 5;
+  string function_name = 6;
+  int32 grant_create = 7;
+  int32 grant_read = 8;
+  int32 grant_update = 9;
+  int32 grant_delete = 10;
+}

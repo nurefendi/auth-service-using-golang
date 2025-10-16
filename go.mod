@@ -1,11 +1,14 @@
 module github.com/nurefendi/auth-service-using-golang
 
-go 1.23
+go 1.24.0
 
+toolchain go1.24.6
 
 require (
 	github.com/golang-jwt/jwt/v4 v4.5.2
-	golang.org/x/crypto v0.32.0
+	golang.org/x/crypto v0.40.0
+	google.golang.org/grpc v1.76.0
+	google.golang.org/protobuf v1.36.10
 	gorm.io/driver/mysql v1.5.7
 )
 
@@ -16,8 +19,9 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	golang.org/x/net v0.34.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
+	golang.org/x/net v0.42.0 // indirect
+	golang.org/x/text v0.27.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250804133106-a7a43d27e69b // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
@@ -40,7 +44,7 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.51.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
-	golang.org/x/sys v0.29.0 // indirect
+	golang.org/x/sys v0.34.0 // indirect
 	gorm.io/gorm v1.25.7
 )
 

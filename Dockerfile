@@ -21,8 +21,8 @@ COPY --from=builder /app/app .
 COPY .production.env .production.env
 COPY .local.env .local.env
 
-# Expose port
-EXPOSE 3000
+# Expose ports for both REST API and gRPC
+EXPOSE 9000 9001
 
 # Jalankan binary
 CMD ["./app"]
